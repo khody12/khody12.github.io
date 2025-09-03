@@ -42,6 +42,11 @@ a{
     width:40%;
     height:100%;
     border-radius:10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+img:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--card-hover-shadow);
 }
 
 .dolly{
@@ -54,4 +59,5 @@ a{
     height:auto;
     border-radius:20px;
     padding:10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }

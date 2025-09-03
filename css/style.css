@@ -22,7 +22,7 @@ body {
 
 .main-header {
     text-align: center;
-    padding: 4rem 1rem;
+    padding: 1rem 1rem;
     background-color: var(--card-background);
     border-bottom: 1px solid #e9ecef;
 }

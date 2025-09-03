@@ -1,0 +1,59 @@
+
+
+
+.heading{
+    display:flex;
+    margin:15px;
+    flex-direction:row;
+    justify-content:space-between;
+    
+}
+
+a{
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+.project{
+    display:flex;
+    gap:20px;
+    flex-direction:column;
+    justify-content:center;
+}
+
+.projectSection{
+    /* justify content is along main axis, so whatever axis flex direction is on currently, while align-items is cross axis */
+
+    display:flex;
+    gap:5px;
+    flex-direction:column;
+    align-items:center;
+}
+
+.image_container{
+    display:flex;
+    flex-direction:row;
+    justify-content:center;
+    gap:10px;
+    padding:5px;
+}
+
+.image_container > img {
+    width:40%;
+    height:100%;
+    border-radius:10px;
+}
+
+.dolly{
+    display:flex;
+    justify-content:center;
+    
+
+}
+
+.dolly > img{
+    width:60%;
+    height:auto;
+    border-radius:20px;
+    padding:10px;
+}

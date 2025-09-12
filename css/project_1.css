@@ -1,0 +1,7 @@
+.heading{
+    display:flex;
+    margin:15px;
+    flex-direction:row;
+    justify-content:space-between;
+}
+

@@ -1,40 +1,117 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>project0</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 1: Images of the Russian Empire</title>
+    
+    <!-- Link to your external CSS stylesheet -->
     <link rel="stylesheet" href="../css/project_1.css">
+
+    <!-- Link to Google Fonts (Playfair Display for headings, Source Serif Pro for body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="header">
-        <div><h1>Project 1</h1></div>
-        <div><h3><a href="../index.html">Home</a></h3></div>
+
+    <!-- A main container to center the content on the page -->
+    <div class="container">
+
+        <!-- Header Section -->
+        <header class="page-header">
+            <h1>Images of the Russian Empire</h1>
+            <nav>
+                <a href="../index.html" class="home-button">Home</a>
+            </nav>
+        </header>
+
+        <!-- Main Content Section -->
+        <main class="main-content">
+            <!-- Left Column: Introduction Text -->
+            <div class="main-section">
+                <div class="text-column">
+                    <div class="text-content">
+                        <h2>Project Overview</h2>
+                        <p>
+                            This project involved restoring early 20th-century color photographs from the Russian Empire. The images were originally captured by Sergei Mikhailovich Prokudin-Gorskii as three separate black-and-white glass plate negatives using red, green, and blue filters. 
+                            He won the Tzar's special permission to travel across the empire and take color photographs of everything he saw.
+                        </p>
+                        <p>His idea was to record three exposures of every scene onto a glass plate using a red, a green, and a blue filter. Even though there was no way to print color photographs until much later.</p>
+                        <p>
+                            By digitally overlaying and aligning these three channels, the original color and breathtaking beauty of the scenes can be restored, offering a vivid glimpse into a world over a century old.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right Column: Images -->
+                <div class="image-column">
+                    <div class="image-gallery">
+                        <!-- Unaligned Image Strip -->
+                        <div class="image-wrapper">
+                            <img src="./cs180_proj1_data/cathedral.jpg" alt="Unaligned color channels of the cathedral">
+                        </div>
+                    
+                        <!-- Restored Color Image -->
+                        <div class="image-wrapper">
+                            <img src="./cs180_proj1_data/cathedral_restored.jpg" alt="Fully restored color image of the cathedral">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <div class="text-content">
+                        <h2>Naive alignment</h2>
+                        <p>
+                            The naive solution to this problem is to just take each each image, make sure it's the same shape, and then layer the channels over each other. But as we can see, this doesn't look quite right. 
+                        </p>
+                        <p>This is because Sergei couldn't keep the camera absolutely perfectly steady as he changed the filters. Considering this was the early 1900s some small movements are to be expected. So there are some alignment issues that will need to be rectified.</p>
+                    </div>
+                </div>
+            
+                <div class="image-column">
+                    <div class="image-gallery-2">
+                        <div class="image-wrapper-2">
+                            <img src="./cs180_proj1_data/naive_alignment_cathedral.png">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <div class="text-content">
+                        <h2>Single-Scale Alignment</h2>
+                        <p>
+                            A way to align the color channels is to have a base channel, in my case blue, and compare it with the red and green channel and try to minimize the difference between the two images by comparing the pixels in some range like [-15, 15].
+                        </p>
+                        <p>This would be accomplished by keeping one channel steady while shifting the other channel and measuring the sum of the distance between their values using NCC or L2 norm.</p>
+                        <p>Essentially we would try shifting the red/green channel say 5px right, 5px up. If this has a lower displacement (i.e. the values are closer), then they should be more aligned. I used the L2 norm to accomplish this.</p></p>
+                    </div>
+                </div>
+            
+                <div class="image-column">
+                    <div class="image-gallery-2">
+                        <div class="image-wrapper-2">
+                            <img src="./cs180_proj1_data/single_scale_alignment_cathedral.png">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+        </main>
+
+        <!-- Footer Section -->
+        <footer class="page-footer">
+            <p>&copy; 2025 Eric Khodorenko</p>
+        </footer>
+
     </div>
-
-    <div class="project">
-        <div class="introduction">
-            <div><p>
-                In this project, I restored images that been taken separately in three different channels and layered them on top of each other
-                to restore color. The layering of the three channels led to the original beauty of the scene being restored.
-            </p></div>
-            <img src="./cs180_proj1_data/cathedral.jpg">
-            <img src="./cs180_proj1_data/cathedral_restored.jpg">
-        </div>
-        
-    </div>
-
-
-
-    
-    
 </body>
-
-
-<footer class="main-footer">
-    <p>&copy; 2025 Eric Khodorenko</p>
-    <h5>https://khody12.github.io/project1/index.html</h5>
-</footer>
-
-
-
 </html>

@@ -4,7 +4,7 @@ import skimage.io as skio
 import matplotlib.pyplot as plt
 from skimage.filters import sobel
 from PIL import Image
-
+import sys
 
 # using basic euclidean distance to compare
 def align(channel_one, channel_two): # (base channel, channel we are aligning to the other)
@@ -38,6 +38,49 @@ filename_prefixes = ["cathedral", "church", "emir", "harvesters", "icon",
               "italil", "lastochikino", "lugano", "melons", "monastery", "self_portrait", "siren", "three_generations", "tobolsk"]
 
 imname = 'cathedral.jpg'
+
+###   NAIVE IMPLEMENTATION   ###
+im = skio.imread("cathedral.jpg")
+
+im = sk.img_as_float(im)
+
+height = np.floor(im.shape[0] / 3.0).astype(np.int16)
+
+b = im[:height] # define axis 0 and then just get all of axis 1. numpy infers you want all of it im[:height] = im[:height, :]
+g = im[height: 2*height]
+r = im[2*height: 3*height]
+
+im_out = np.dstack([r, g, b])
+
+plt.imshow(im_out, cmap="gray") # cmap stands for color map. translate numerical data into colors. typically we just use grey here. 
+plt.title("Naive implementation")
+plt.show()
+
+###   NAIVE IMPLEMENTATION   ###
+
+#adding with aligned implementation - slow version and crop.
+
+crop = 0.1
+h, w = b.shape
+
+crop_h = int(h * crop)
+crop_w = int(w * crop)
+
+b = b[crop_h: h - crop_h, crop_w: w - crop_w]
+g = g[crop_h: h - crop_h, crop_w: w - crop_w]
+r = r[crop_h: h - crop_h, crop_w: w - crop_w]
+
+aligned_red = align(b, r)
+aligned_green = align(b, g)
+
+im_out = np.dstack([aligned_red, aligned_green, b])
+
+plt.imshow(im_out, cmap="gray") # cmap stands for color map. translate numerical data into colors. typically we just use grey here. 
+plt.title("Single alignment + crop")
+plt.show()
+
+sys.exit()
+
 for num in range(0, len(filenames)):
     # read in the image
     im = skio.imread(filenames[num])

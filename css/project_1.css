@@ -148,3 +148,21 @@ h1, h2, h3 {
     color: #6b7280; 
     font-size: 0.875rem;
 }
+
+.photo-section{
+    margin-top:30px;
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows:400px 400px 400px 400px;
+}
+.photo-section img{
+    width:100%;
+    height:auto;
+    border-radius:2px;
+}
+.photo-wrapper{
+    width:100%;
+    max-width:400px;
+    height:auto;
+    
+}

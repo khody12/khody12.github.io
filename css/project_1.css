@@ -153,7 +153,7 @@ h1, h2, h3 {
     margin-top:30px;
     display:grid;
     grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows:400px 400px 400px 400px;
+    grid-template-rows:auto;
 }
 .photo-section img{
     width:100%;

@@ -10,14 +10,14 @@ im1 = plt.imread('./images/DerekPicture.jpg')
 
 
 # plt.imshow(np.log(np.abs(np.fft.fftshift(np.fft.fft2(cv2.cvtColor(im1.astype(np.float32), cv2.COLOR_RGB2GRAY))))))
-# plt.title("Fourier Transform of the Dog")
+# plt.title("Fourier Transform of low pass image")
 # plt.show()
 
 im2 = plt.imread('./images/nutmeg.jpg') #/255
 
 
 # plt.imshow(np.log(np.abs(np.fft.fftshift(np.fft.fft2(cv2.cvtColor(im2.astype(np.float32), cv2.COLOR_RGB2GRAY))))))
-# plt.title("Fourier Transform of the Lion")
+# plt.title("Fourier Transform of the high pass image")
 # plt.show()
 
 im1 = im1 / 255

@@ -346,8 +346,8 @@
                     <p>You'll see Margritte's painting up close, and Klimtz's at a distance.</p>
                 </div>
                 <div class="image-column">
-                    <div class="image-gallery-2">
-                        <div class="image-wrapper-row">
+                    <div class="image-gallery">
+                        <div class="image-wrapper-col">
                             <img src="./results/hybrid_lovers_thekiss.png">
                         </div>
                     </div>
@@ -421,7 +421,7 @@
                     <p>For example, to get Laplacian stack level 0. We take the original image and the original image convolved with a Gaussian filter. We subtract the blurred image from the original, and this results in a details image of the highest frequencies. We continue this process until we don't have any further levels in the Gaussian stack to utilize.</p>
                     <p>This results in a Laplacian stack that has images containing certain bands of frequencies.</p>
                     <p>We will then utilize a mask. In this case, just a black and white square, black on one half, white on the other. Black will have a pixel value of 0, and white a pixel value of 1. We will construct our blended image by also putting our mask through a Gaussian stack to make it blurry and ease the transition between the white and black half.</p>
-                    <p>Our final formuala is Hybrid_Level = G_mask_level * Laplacian_Apple_level + (G_mask_level - 1) * Laplacian_Orange_Level</p>
+                    <p>Our final formuala is Hybrid_Level = G_mask_level * Laplacian_Apple_level + (1 - G_mask_level) * Laplacian_Orange_Level</p>
                     <p>We go through each level in the stack, create a stack for the hybrid image, and at the very end we will add up all of the images in the hybrid stack and that will be our final image.</p>
                 </div>
                 <div class="image-column">

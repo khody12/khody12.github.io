@@ -8,4 +8,5 @@ There are several files here that you will need to run to test the code
 #3 Just adjust the names of the images you read to do the other variations.
 
 #4. For Splining in stacks.py, the size of the mask may need to be adjusted depending on the sizes of the images. For example for the lion, the width of the mask needs to be +1'ed. I will leave the commented out code for that.
+#There is also commented out code for the masks, Each will need a different set of code. Oraple is going to be default, but from there, there is a robot_hand irregular mask, and that +1'ed lion/cat mask. You will need to comment out the code based on how i guide you in the .py file.
 

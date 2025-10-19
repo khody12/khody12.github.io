@@ -6,7 +6,7 @@ import cv2
 from stacks import create_gaussian_stack, create_la_placian_stack, create_gaussian_stack_greyscale, d2_gaussian
 
 #1st image correspondences, i.e. pano1
-correspondences = {"im1_name":"im1","im2_name":"im2","im1Points":[[633,232],[338,355],[693,178],[339,268],[676,282],[657,344],[420,279],[536,407],[333,96],[531,77],[611,105],[377,309],[439,299],[482,293],[515,288],[395,332],[469,314],[629,492],[634,257],[593,218],[401,254]],"im2Points":[[348,231],[43,374],[391,184],[45,268],[380,274],[367,325],[149,280],[269,395],[28,60],[258,83],[329,117],[97,315],[171,300],[217,290],[249,283],[119,338],[204,313],[349,458],[350,253],[317,218],[127,250]]}
+#correspondences = {"im1_name":"im1","im2_name":"im2","im1Points":[[633,232],[338,355],[693,178],[339,268],[676,282],[657,344],[420,279],[536,407],[333,96],[531,77],[611,105],[377,309],[439,299],[482,293],[515,288],[395,332],[469,314],[629,492],[634,257],[593,218],[401,254]],"im2Points":[[348,231],[43,374],[391,184],[45,268],[380,274],[367,325],[149,280],[269,395],[28,60],[258,83],[329,117],[97,315],[171,300],[217,290],[249,283],[119,338],[204,313],[349,458],[350,253],[317,218],[127,250]]}
 
 #2nd image correspondences i.e. pano2
 correspondences = {"im1_name":"im6","im2_name":"im7","im1Points":[[738,309],[639,259],[500,338],[467,346],[417,416],[378,271],[966,236],[884,520],[956,491],[404,631],[770,668],[821,676],[957,630],[943,684],[602,616],[691,629],[780,431],[839,378],[833,332]],"im2Points":[[451,319],[356,268],[205,346],[164,357],[103,439],[47,267],[631,259],[577,503],[629,474],[93,687],[484,654],[529,654],[632,594],[624,644],[322,632],[412,630],[490,431],[537,382],[531,340]]}
@@ -17,7 +17,7 @@ correspondences = {"im1_name":"im6","im2_name":"im7","im1Points":[[738,309],[639
 #   "im2Points": [[0,0],[600,0],[0,750],[600,750],[300,0],[600,375],[0,375],[300,750]]}
 
 # pano3 correspondences
-correspondences = {"im1_name":"im8","im2_name":"im9","im1Points":[[299,216],[532,149],[411,169],[615,127],[564,480],[704,494],[385,462],[445,442],[861,449],[875,579],[758,282],[756,329],[759,110],[759,173],[515,262],[342,417],[325,453],[912,475],[488,426],[385,298]],"im2Points":[[17,205],[298,152],[162,160],[384,135],[338,492],[475,499],[129,485],[202,460],[609,447],[618,566],[520,297],[519,340],[518,137],[519,195],[285,265],[69,440],[52,480],[650,469],[251,440],[129,300]]}
+# correspondences = {"im1_name":"im8","im2_name":"im9","im1Points":[[299,216],[532,149],[411,169],[615,127],[564,480],[704,494],[385,462],[445,442],[861,449],[875,579],[758,282],[756,329],[759,110],[759,173],[515,262],[342,417],[325,453],[912,475],[488,426],[385,298]],"im2Points":[[17,205],[298,152],[162,160],[384,135],[338,492],[475,499],[129,485],[202,460],[609,447],[618,566],[520,297],[519,340],[518,137],[519,195],[285,265],[69,440],[52,480],[650,469],[251,440],[129,300]]}
 
 def computeH(im1_pts, im2_pts):
     p = np.array(im1_pts)
@@ -158,11 +158,11 @@ def warpImageBilinear(im, H):
     normalized_bl = translated_bl / translated_bl[2]
     normalized_br = translated_br / translated_br[2]
 
-    min_height = np.floor(min(normalized_tl[1], normalized_tr[1], normalized_bl[1], normalized_br[1])) # get the y values that live at [1]
-    max_height = np.ceil(max(normalized_tl[1], normalized_tr[1], normalized_bl[1], normalized_br[1]))
+    min_height = int(np.floor(min(normalized_tl[1], normalized_tr[1], normalized_bl[1], normalized_br[1]))) # get the y values that live at [1]
+    max_height = int(np.ceil(max(normalized_tl[1], normalized_tr[1], normalized_bl[1], normalized_br[1])))
 
-    min_width = np.floor(min(normalized_tl[0], normalized_tr[0], normalized_bl[0], normalized_br[0]))
-    max_width = np.ceil(max(normalized_tl[0], normalized_tr[0], normalized_bl[0], normalized_br[0]))
+    min_width = int(np.floor(min(normalized_tl[0], normalized_tr[0], normalized_bl[0], normalized_br[0])))
+    max_width = int(np.ceil(max(normalized_tl[0], normalized_tr[0], normalized_bl[0], normalized_br[0])))
 
     corners = [min_height, min_width, max_height, max_width]
     
@@ -250,7 +250,7 @@ def stitch(im1, im2, corners_warped_im): # typically warped image is im1, image 
     overlap_max_y = min(max_y, im2_max_y)
 
     gradient = np.linspace(1, 0, num=overlap_max_x - overlap_min_x)
-    overlap_mask = np.tile(gradient, (overlap_max_y - overlap_min_y, 1))
+    overlap_mask = np.tile(gradient, (int(overlap_max_y - overlap_min_y), 1))
 
     pano_width = final_max_x - final_min_x
     pano_height = final_max_y - final_min_y
@@ -304,6 +304,21 @@ def stitch(im1, im2, corners_warped_im): # typically warped image is im1, image 
     overlap_mask = np.tile(gradient, (overlap_max_y - overlap_min_y, 1))
     canvas_mask[start_y:end_y, start_x:end_x] = overlap_mask
 
+    print(start_y, end_y, start_x, end_x)
+    print(canvas_im2.shape, canvas_warpedim.shape, canvas_mask.shape)
+
+    # correcting for the corners where we want all of the regular image or warped image but the mask is rectangular and cuts them off
+    for i in range(start_y, end_y):
+        for j in range(start_x, end_x):
+            if tuple(canvas_im2[i, j]) == (0, 0, 0) and tuple(canvas_warpedim[i, j]) == (0, 0, 0):
+                print("what was there before", canvas_mask[i, j])
+                canvas_mask[i, j] = 0.0
+            elif tuple(canvas_im2[i, j]) != (0, 0, 0) and tuple(canvas_warpedim[i, j]) == (0, 0, 0):
+                canvas_mask[i, j] = 1
+            elif tuple(canvas_im2[i, j]) == (0, 0, 0) and tuple(canvas_warpedim[i, j]) != (0, 0, 0):
+                canvas_mask[i, j] = 0
+            
+        
     canvas_mask_normalized = cv2.normalize(canvas_mask, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8U)
     
 
@@ -339,35 +354,38 @@ def stitch(im1, im2, corners_warped_im): # typically warped image is im1, image 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-# MUST BE CHANGED DEPENDING ON THE IMAGES YOU ARE LOADING IN !!!!!!!!!!!!!!!!!
-im1 = cv2.imread("./images/im6.JPG")
-im2 = cv2.imread("./images/im7.JPG")
+    return result_image
 
-homography = computeH(correspondences["im1Points"], correspondences["im2Points"])
-print("homography", homography)
+if __name__ == "__main__":
+    # MUST BE CHANGED DEPENDING ON THE IMAGES YOU ARE LOADING IN !!!!!!!!!!!!!!!!!
+    im1 = cv2.imread("./images/im6.JPG")
+    im2 = cv2.imread("./images/im7.JPG")
 
-# uncomment if you want to test the interpolations, uncommented for speed purposes if you just want to go straight to testing the mosaics
-# image_prime = warpImageNearestNeighbor(im1, homography).astype(np.uint8)
-# cv2.imshow("image after nearest neighbor homography", image_prime) # needs uint8
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
-        
-# image_prime, corners = warpImageBilinear(im1, homography)
-# print("corners", corners)
-# cv2.imshow("image after bilinear homography", image_prime.astype(np.uint8)) # needs uint8
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
+    homography = computeH(correspondences["im1Points"], correspondences["im2Points"])
+    print("homography", homography)
 
-image_prime = cv2.imread("./images/warped_bilinear_im8.png")  # ALSO NEEDS TO BE CHANGED DEPENDING ON WHAT YOU ARE LOADING IN, IF YOU ARE RUNNING IT ALL AT ONCE, ITS OK. 
-# WARPED_BILINEAR_IM1.PNG FOR THE FIRST PANO ^^^^^^^^^
-# WARPED_BILINEAR_IM6.PNG FOR THE SECOND PANO
-# WARPED_BILINEAR_IM8.PNG FOR THE THIRD PANO
+    # uncomment if you want to test the interpolations, uncommented for speed purposes if you just want to go straight to testing the mosaics
+    # image_prime = warpImageNearestNeighbor(im1, homography).astype(np.uint8)
+    # cv2.imshow("image after nearest neighbor homography", image_prime) # needs uint8
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+            
+    # image_prime, corners = warpImageBilinear(im1, homography)
+    # print("corners", corners)
+    # cv2.imshow("image after bilinear homography", image_prime.astype(np.uint8)) # needs uint8
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
-cv2.imwrite("./images/warped_bilinear_im8.png", image_prime)
+    image_prime = cv2.imread("./images/warped_bilinear_im6.png")  # ALSO NEEDS TO BE CHANGED DEPENDING ON WHAT YOU ARE LOADING IN, IF YOU ARE RUNNING IT ALL AT ONCE, ITS OK. 
+    # WARPED_BILINEAR_IM1.PNG FOR THE FIRST PANO ^^^^^^^^^
+    # WARPED_BILINEAR_IM6.PNG FOR THE SECOND PANO
+    # WARPED_BILINEAR_IM8.PNG FOR THE THIRD PANO
 
-# corners = [-274, -818, 841, 410] # corners for pano1
+    # cv2.imwrite("./images/warped_bilinear_im8.png", image_prime)
 
-# corners = [-175, -649, 1008, 671] # corners for pano2
-corners = [-128, -499, 950, 725] # corners for pano3
-stitch(image_prime, im2, corners)
+    #corners = [-274, -818, 841, 410] # corners for pano1
+
+    corners = [-175, -649, 1008, 671] # corners for pano2
+    # corners = [-128, -499, 950, 725] # corners for pano3
+    stitch(image_prime, im2, corners)
         

@@ -183,7 +183,7 @@
                 </div>
                 <div class="image-gallery">
                     <div class="image-wrapper-col">
-                        <img src="./images/pano1.png">
+                        <img src="./images/new_pano1.png">
                     </div>
                 </div>
             </div>
@@ -198,7 +198,7 @@
                 </div>
                 <div class="image-gallery">
                     <div class="image-wrapper-col">
-                        <img src="./images/pano2.png">
+                        <img src="./images/new_pano2.png">
                     </div>
                 </div>
             </div>
@@ -225,10 +225,157 @@
                 </div>
                 <div class="image-gallery">
                     <div class="image-wrapper-col">
-                        <img src="./images/pano3.png">
+                        <img src="./images/new_pano3.png">
                     </div>
                 </div>
             </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Automatic Panorama Creation Using Harris Corner Detection</h1>
+                    <p>Now that we see how we can manually create panoramas by finding correspondences and warping images, let's transition to finding an algorithm to automatically find correspondences.</p>
+                    <p>The principal algorithm for this is Harris corner detection. Harris corner detection finds corners that will then be used as correspondences between our two images.</p>
+                    <p>One problem with Harris corner detection is that it can give us a huge number of corners if we have busy images, specifically images with trees or brush. This often necessitates a suppression algorithm to reduce the number of detected corners.</p>
+                    <p>Here, I'll compare regular Harris corner detection to Harris + Adaptive Non-Maximal Suppression which works to guarantee that interest points are spatially well distributed over an image. The suppression algorithm will take the points in the Harris image that are local maxes by finding the points with the largest distance to points that are brighter than themselves.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="./images_pt2/harris.png">
+                        <img src="./images_pt2/suppressed_harris.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Feature Descriptor Extraction</h1>
+                    <p>Once we have our most prominent corners, we want to get a patch around the location of the corner so that we can better match corners to our other image. If we just use the value of the corner, it would be pretty likely that our other image would have several corners with a similar value.</p>
+                    <p>Extracting patches of the corners however will capture some surrounding information around the corner and we will perform our corner matching based on these feature patches.</p>
+                    <p>Here I started with a 40 pixel window around the coordinate of our corner. This was then blurred and downsampled to an 8x8 window. This 8x8 window is how we are going to match our corners.</p>
+                    
+                </div>
+                <div class="image-gallery-2">
+                    <div class="image-wrapper-row">
+                        <img src="./images_pt2/window1.png">
+                    </div>
+                    <div class="image-wrapper-row">
+                        <img src="./images_pt2/descriptor1.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                
+                <div class="image-gallery-2">
+                    <h1>A Few More Extractions</h1>
+                    <div class="image-wrapper-row">
+                        <img src="./images_pt2/window2.png">
+                    </div>
+                    <div class="image-wrapper-row">
+                        <img src="./images_pt2/descriptor2.png">
+                    </div>
+                    <div class="image-wrapper-row">
+                        <img src="./images_pt2/window3.png">
+                    </div>
+                    <div class="image-wrapper-row">
+                        <img src="./images_pt2/descriptor3.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Matching Features</h1>
+                    <p>Using our Harris Detector + feature extractor, we will run both algorithms on two images that have similar points in frame. Now we will compare all of our extracted features from one image to all the extracted features in our other image.</p>
+                    <p>In order to determine if we have a match, we will just use Euclidean distance between the features. For each feature, we want to find two features from the other image that it pairs the best with.</p>
+                    <p>If the 1st match is way better than the 2nd match, then this is a valid match and we keep it. If our 1st match is only slighty better, than it's likely neither are an actually good match and we discard both.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="./images_pt2/feature_match_pano1.png">
+                    </div>
+                    <div class="image-wrapper-col">
+                        <img src="./images_pt2/feature_match_pano2.png">
+                    </div>
+                    <div class="image-wrapper-col">
+                        <img src="./images_pt2/feature_match_pano3.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Putting It All Together With RANSAC</h1>
+                    <p>While the feature matching above gets us pretty close, there are some matches which are clearly not valid.</p>
+                    <p>In order to correct for these, we run the RANSAC loop.</p>
+                    <p>The RANSAC loop involves randomly sampling 4 matching points from the two images, computing the homography between them, and then evaluating whether that homography is actually any good.</p>
+                    <p>We evaluate the performance of the homography by seeing how close a feature gets to its other matched feature. If it's within a reasonable distance, then we consider that match a true correspondence.</p>
+                    <p>We run through this loop 5000 times in my implementation. At the end we will arrive with a list of points that are true matches, and we compute a final homography from these matches.</p>
+                    <p>Finally, I use this automatically generated homography and use the same warping and stitching code from the first part of this project. Have a look at the results.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="./images_pt2/auto_pano1.png">
+                    </div>
+                    <div class="image-wrapper-col">
+                        <img src="./images_pt2/auto_pano2.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Comparing Manual panorama to Auto Panorama</h1>
+                    <p>Here we look at the first case, it's not super obvious if auto panorama is better here. I think where you can see some better performance is in the tree in the middle of the photo. The manual panorama just has a slight out-of-focus vibe to it.</p>
+                    <p>But, is a great result nevertheless. I had to click on 20 points to do that manual panorama which took me probably like 2-3 minutes to find reasonable enough points that worked. With the auto panorama, I just ran main.py.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="./images/new_pano1.png">
+                    </div>
+                    <div class="image-wrapper-col">
+                        <img src="./images_pt2/auto_pano1.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Comparing Manual panorama to Auto Panorama</h1>
+                    <p>Again, this one was pretty good already in the original manual correspondence version.</p>
+                    <p>But, if you look at the tree in the background, (the one next to the Campanile) the manual version has some significant fuzz that the autopano is able to successfully avoid.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="./images/new_pano2.png">
+                    </div>
+                    <div class="image-wrapper-col">
+                        <img src="./images_pt2/auto_pano2.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Comparing Manual Panorama to Auto Panorama</h1>
+                    <p>This version does have some good improvements that you can see without really putting your eye to it.</p>
+                    <p>In the manual version, the asphalt looks quite blurry and almost like there is some motion blur going on. In the auto version, there is still a little bit of blur, but it's certainly improved.</p>
+                    
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="./images/new_pano3.png">
+                    </div>
+                    <div class="image-wrapper-col">
+                        <img src="./images_pt2/auto_pano3.png">
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
 
 
 

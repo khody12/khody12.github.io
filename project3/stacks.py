@@ -27,7 +27,7 @@ def create_gaussian_stack(image, filter, stack, levels):
         blurred_r = scipy.signal.convolve2d(r, filter, mode='same')
 
         blurred_im = cv2.merge([blurred_b, blurred_g, blurred_r])
-        print(stack)
+        # print(stack)
         stack.append(blurred_im)
         return create_gaussian_stack(blurred_im, filter, stack, levels)
 
@@ -39,7 +39,7 @@ def create_gaussian_stack_greyscale(image, filter, stack, levels):
     
         print(stack)
         stack.append(blurred_im)
-        return create_gaussian_stack(blurred_im, filter, stack, levels)
+        return create_gaussian_stack_greyscale(blurred_im, filter, stack, levels)
 
     
 def create_la_placian_stack(gaussian_stack):

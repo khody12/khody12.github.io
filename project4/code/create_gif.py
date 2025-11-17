@@ -22,6 +22,6 @@ def create_gif(image_folder, gif_path, fps=10):
     for file_path in file_paths:
         images.append(imageio.imread(file_path))
     
-    imageio.mimsave(gif_path, images, fps=fps)
+    imageio.mimsave(gif_path, images, fps=fps, loop=0)
 
 create_gif("./final_lego_gif_images", "lego_gif.gif", fps=10)

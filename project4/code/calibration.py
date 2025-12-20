@@ -44,13 +44,13 @@ images = []
 
 
 # go through our new images, detect the SINGLE aruco tag. so there should only be 1 corners list
-for i in range(0, 45):
+for i in range(0, 40):
     if i == 20:
         continue
     world_points = []
     image_points = []
 
-    image = cv2.imread(f"./nerf_data_images/im{i}.JPG")
+    image = cv2.imread(f"./nerf_data_images_2/im{i}.JPG")
     corners, ids, _ =  detector.detectMarkers(image)
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -74,7 +74,8 @@ for i in range(0, 45):
         w2c_matrix[:3, :3] = R
         w2c_matrix[:3, 3] = tvec.squeeze() # tvec is (3,1), make it (3,)
 
-        c2w_matrix = np.linalg.inv(w2c_matrix) 
+        c2w_matrix = np.linalg.inv(w2c_matrix)
+        c2w_matrix[:3, 3] *= 10
 
         c2ws.append(c2w_matrix)
 

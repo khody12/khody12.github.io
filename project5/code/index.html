@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 5: Diffusion and Flow Matching</title>
+    
+    <!-- Link to your external CSS stylesheet -->
+    <link rel="stylesheet" href="../../css/project_2.css">
+
+    <!-- Link to Google Fonts (Playfair Display for headings, Source Serif Pro for body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- A main container to center the content on the page -->
+    <div class="container">
+        <!-- Header Section -->
+        <header class="page-header">
+            <h1>Diffusion and Flow Matching</h1>
+            <nav>
+                <a href="../index.html" class="home-button">Home</a>
+            </nav>
+        </header>
+
+        <!-- Main Content Section -->
+        <main class="main-content">
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Intro</h1>
+                    <p>In this project, I will explore using diffusion models for creating interesting artistic images 
+                        and training a flow matching model to perform digit generation with the MNIST dataset.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/cmask_ocean_inpaint.png">
+                    </div>
+        
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Visualizing Prompts With DeepFloyd</h1>
+                    <p>I'll be using the DeepFloyd diffusion model for the first part of this project. I'll visualize some prompts I chose here with number of steps 20 and 40.</p>
+                </div>
+                <div class="image-gallery">
+                    
+                    <div class="image-wrapper-col">
+                        <h5>20 steps</h5>
+                        <img src="../5a_results/prompt_vis_20steps.png">
+                    </div>
+                    
+                    <div class="image-wrapper-col">
+                        <h5>40 steps</h5>
+                        <img src="../5a_results/prompt_vis_40steps.png">
+                    </div>
+        
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Visualizing the Forward Process</h1>
+                    <p>We take the original image and then add some amount of random noise to the image using 
+                        the equation x_t = sqrt(alphas_cumprod) * original_image + sqrt(1 - alpha_cumprod) * random_noise.
+                        The alpha values come from a noise schedule that are fixed before the model is trained. DeepFloyd models have 1000 time steps and each of them give an approximation of how much noise is in the image at a particular timestep.
+                    </p>
+                </div>
+                <div class="image-gallery-2">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/noisy_campaniles.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Classical Denoising</h1>
+                    <p>Gaussian blurring is one of the most basic ways to denoise an image. We can take a look at the results here of applying a Gaussian blur to our noisy Campaniles.
+                    </p>
+                    <p>You can see the results are pretty poor. It does reduce the intensity of the noise, but the noisy is obviously still present, and the original image is now blurry as well.</p>
+                </div>
+                <div class="image-gallery-2">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/noisy_gaussian_campaniles.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>One-Step Denoising</h1>
+                    <p>The idea with diffusion is to slowly denoise an image, going step by step, till we get to the final image. But, at intermediate steps the model can output its best guess 
+                        of the noise in the current image based on the timestep t.</p>
+                    <p>We'll use a pretrained diffusion model to denoise our image. It's a UNet that has been trained on a very large set of pairs of noisy and clean images. The model will predict the noise in the noisy image and we will remove that noise to get an estimate of the image.</p>
+                    <p>We'll remove the noise using the following equation: X_t' = sqrt(alphas_cumprod[t]) * beta * x_0 / (1 - alphas_cumprod[t]) + sqrt(alpha) * (1 - alphas_cumprod[t]) * x_t / (1 - alphas_cumprod) + random noise where X_t is the image at timestep t, X_t' is our less noisy image with t' < t, alpha is alphas_cumprod[t] / alphas_cumprod[t'], beta = 1 - alpha, and X_0 is our current estimate of the clean image.</p>
+                    <p>Here, we'll look at one-step denoising the Campanile at a few different noise levels. </p>
+                    <p>The model was trained with text conditioning so we'll need a text prompt embedding. We'll use 'a high quality photo.'</p>
+                    <p>The model gets farther and farther away from the true image at higher noise levels, but it still gets pretty close despite much of the image being noise.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <p>The Campanile</p>
+                        <img src="../5a_results/campanile.png">
+                    </div>
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/one_step_denoising.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Iterative Denoising</h1>
+                    <p>Now, we'll use the model to do iterative diffusion by taking steps of size 30. We could do steps of 1, but in practice this is overkill and is computationally wasteful.</p>
+                    <p>We can see how the Campanile starts to emerge as we take more and more time steps. It doesn't look quite the original image, but it gets close, and it's much more detailed than the one-step denoise.</p>
+
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/iterative_transformation_campaniles.png">
+                    </div>
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/it_one_gau_denoise.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Diffusion Model Sampling</h1>
+                    <p>Now, instead of passing in a timestep that is already progressed and a natural image that has been noised. We will pass in pure noise, and start at the last time step and slowly move to smaller timesteps t'.</p>
+                    <p>We will use a prompt of "a high quality photo" so it will largely be random image generation.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/noncfg_sampled.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Classifier Free Guidance</h1>
+                    <p>Previously, we used "a high quality photo" as a "null" condition. This time, we'll use the actual null "" condition for unconditional guidance and "a high quality photo" for conditional guidance.</p>
+                    <p>The noise estimate will now be -> noise = unconditional_noise + scale * (conditional_noise - unconditional_noise).</p>
+                    <p>Our "a high quality photo" prompt now becomes a condition to create actual conditional noise.</p>
+                    <p>The result is images that look far more real.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/cfg_sampled.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Image-to-image Translation</h1>
+                    <p>Here, we're going to noise our original Campanile image and run our classifier free iterative denoiser at different starting timesteps, [1, 3, 5, 7, 10, 20].</p>
+                    <p>The idea here being that we'll see how much our model generates new features when it thinks its at higher noise levels and has to go through more steps. Having more of these timesteps forces the model to be more creative and in our result we see how different images that are given a high timestep look from the true image.</p>
+                    <p>I've used an image of an ocean and a waterfall for my other two images. They both have a tendency to predict a human at higher timesteps values but gradually remove them from the image.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/transformation_campanile.png">
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/transformation_ocean.png">
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/transformation_waterfall.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Editing Hand-Drawn and Web Images</h1>
+                    <p>Now, we'll see what happens when we use less realistic images with DeepFloyd in the same way as above.</p>
+                    <p>I'm using the Mona Lisa as my painted web image, and then two of my own hand drawn images.</p>                
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/transformation_monalisa.png">
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/transformation_handdrawn.png">
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/transformation_handdrawn2.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Inpainting</h1>
+                    <p>We are going to run the diffusion denoising loop as always, but at every step, we force the image to have the same image as the original where the mask is 0.</p>
+                    <p>This allows us to keep a photo the same but generate a new image in a specific spot.</p>
+                    <p>The algorithm looks like this, x_t = mask * x_t + (1 - mask) * forward(x_orig, t). Basically we force the model to generate new pixels inside of the mask region, and take the original image everywhere else.</p>
+                    
+                </div>
+                <div class="image-gallery">
+                    <h2>Using the class-given square mask.</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/inpainted_campanile.png">
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <h2>Custom mask</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/custom_mask.png">
+                    </div>
+                </div>
+                
+                <div class="image-gallery">
+                    <h2>Using the custom mask on the Campanile, the ocean, and the waterfall.</h2>
+                    <div class="image-wrapper-col">
+                        
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-row">
+                        <img src="../5a_results/orig_ocean.png">
+                        <img src="../5a_results/cmask_ocean_inpaint.png">
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-row">
+                        <img src="../5a_results/orig_waterfall.png">
+                        <img src="../5a_results/cmask_waterfall_inpaint.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Text-Conditional Image-to-image translation</h1>
+                    <p>Our model as we previously was trained with text conditioning. So I'm going to guide our projection with a text prompt now to end up with a combination of our actual image and our text prompt.</p>
+
+                    <p>Starting with the Campanile and a "Rocket Ship" prompt. Followed by an image of an ocean and "Rocket Ship", and finally the waterfall image with prompt 'A portrait of a wizard with a long white beard wearing a dark pointed hat.'</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/rocket_campanile.png">
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/rocket_and_ocean.png">
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/wizard_and_waterfall.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Visual Anagrams</h1>
+                    <p>Now we'll run classifier free guidance on two different prompts but combine them into one image.</p>
+                    <p>We will take random noise, run the model on it to get a noise estimate, then we'll turn the random noise image upside down and run our second prompt on it.</p>
+                    <p>We'll get two noise estimates, we'll unflip the flipped noise and average our two noises together. This will be our noise estimate for the next iteration of the image.</p>
+                    <p>In the end, this will result in visual anagram images where looking at the image upside down will show you something different than the right way up.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <h2>Starting off with an anagram of a campfire and an old man</h2>
+                        <img src="../5a_results/anagram_campfire_oldman.png">
+                        <img src="../5a_results/anagram_upsidedown_campfireman.png">
+                    </div>
+                    <h2>Next a skull and a man with a hat.</h2>
+                    <div class="image-wrapper-row">
+                        <img src="../5a_results/skull_man_anagram.png">
+                        <img src="../5a_results/upside_down_skull_man.png">
+                    </div>
+                </div>
+                
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Hybrid Images</h1>
+                    <p>We can do a similar thing as above to create hybrid images.</p>
+                    <p>We take our current image, use a low pass filter to take out the high frequencies, and then use one of our prompts with CFG. Next we take that same image, use a high pass filter, take the other prompt and use CFG.</p>
+                    <p>We add up their noise estimates to create the next image, and repeat. We'll end up with a hybrid image that looks like one thing up close, and another when viewed from afar.</p>
+                    <p>I did this procedure on a high pass dog and a low pass skull. High pass snowy mountain village, low pass campfire, and finally a high pass wizard and a low pass snowy mountain.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5a_results/hybrid_skull_dog2.png">
+                    </div>
+                    <div class="image-wrapper-row">
+                        <img src="../5a_results/hybrid_village_campfire.png">
+                    </div>
+                    <div class="image-wrapper-row">
+                        <img src="../5a_results/hybrid_wizard_mountain.png">
+                    </div>
+                </div>
+                
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Training a Flow Matching Model</h1>
+                    <p>That was a fun tour through using the DeepFloyd diffusion model to generate interesting image. Now I'll switch gears to training a diffusion flow matching model on the classic MNIST dataset.</p>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Noising an Image</h1>
+                    <p>The fundamental component of any diffusion or flow matching model is the random noising of an image. Here, we'll visualize noising a digit at different sigma values.</p>
+                    <p>We'll use image pairs of noised images and clean images to train a Single-Step Denoising UNet.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/noise_forwarding.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Training our Denoiser</h1>
+                    <p>We will train our denoiser with a sigma value of 0.5 being applied to clean images.</p>
+                    <p>Let's take a look at our results after 1 epoch of training and 5 epochs.</p>
+                    <p>After just one epoch of training, results already look quite good. There is a bit of noise near the edges of the digits, but it's very obvious what the digit is.</p>
+                    <p>Looking at the loss curve, we see that within the first 50-100 iterations, loss is already at around 0.02 and very slowly creeps lower over time.</p>
+                </div>
+                <div class="image-gallery">
+                    <h2>Epoch 1</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/1.2.1_epoch1.png">
+                    </div>
+                    <h2>Epoch 5</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/1.2.1_epoch5.png">
+                    </div>
+                    <h2>Loss Curve</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/1.2.1_losscurve.png">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Testing our Denoiser On Out of Distribution Noise Levels</h1>
+                    <p>We only trained our denoiser on a sigma value of 0.5. So it stands to reason it may not perform as well if we test it out of distribution.</p>
+                    <p>Here we see the results on a variety of different sigma values. It performs well on lower sigma values, but on the higher sigma values the results fall apart a bit.</p>
+                    <p>It still generally is able to show us what the original digit was, but there is a good amount of noise at a sigma value of 1.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/1.2.2_ood_testing.png">
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Denoising Pure Noise</h1>
+                    <p>If we now try to train a one-step denoiser on pure noise images, we see the drawbacks of using this model architecture</p>
+                    <p>Instead, it predicts the same sort of noisy cloud to try to get its training loss down because it generally knows there's a black background and a white digit in the center. It basically predicts an average of all the digits. In doing so, it fails to reconstruct any digit.</p>
+                    <p>The model fundamentally doesn't learn how to move pure noise to an actual digit because to the model, all of the noise basically seems the same. So it just predicts a cloud. </p>
+                    <p>Epoch 1 has about the same results as epoch 5.</p>
+                </div>
+                <div class="image-gallery">
+                    <h2>Epoch 1</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/1.2.3_epoch1.png">
+                    </div>
+                    <h2>Epoch 5</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/1.2.3_epoch5.png">
+                    </div>
+                    <h2>Loss Curve</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/1.2.3_losscurve.png">
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Training a Flow Matching Model</h1>
+                    <p>Our one step denoiser had obvious problems when it came to image generation, so we need to look at a new approach.</p>
+                    <p>We'll now try iteratively denoising an image by training a UNet model to predict the flow from noisy data to clean data. We are essentially training a vector field for moving noisy images to clean images. </p>
+                    <p>Flow is the velocity of this vector field taking us from a noisy x_0 to a clean x_1. We'll implement this by adding time conditioning to our previous UNet to teach the model how to slowly iterate to the solution.</p>
+                    <p>Our fundamental algorithm look like the following. X_t = (1 - t) * X_0 + t * X_1 where t is the timestep, X_t is a noised X_1, X_1 is a clean image, and X_0 is random noise from the gaussian distribution. We'll take our gradient descent step on (X_1 - X_0) - (UNet prediction of noise based on our noised image X_t and the timestep).</p>
+                    <p>Our model trains quite quickly here. Epoch 1 starts to look faintly like digits, but largely still incomprehensible. By epoch 5, true digits start to emerge. There is still a siginificant amount of weird noise, but around 15-20% of generations look like clean digits. By epoch 10, it's closer to 40-50% of images that look like clean digits.</p>    
+                </div>
+                <div class="image-gallery">
+                    <h2>Epoch 1</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/epoch1_2.2.png">
+                    </div>
+                    <h2>Epoch 5</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/epoch5_2.2.png">
+                    </div>
+                    <h2>Epoch 10</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/epoch10_2.2.png">
+                    </div>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/2.2_training.png">
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Adding Class-Conditioning to UNet</h1>
+                    <p>To further improve results, we can condition the UNet on classes as well.</p>
+                    <p>This involves teaching the model what class a digit belongs to which can be done using a one-hot encoding. However, we'd still like our model to work without being given a class, so we implement dropout. 10% of the time, the class conditioning vector is dropped by setting it to zero. Similar to classifier-free guidance with the DeepFloyd model.</p>
+                    <p>The idea here is that training is now including the class C, and our descent step becomes (X_1 - X_0) - (UNet prediction of noise based on our noised image X_t, the timestep, and the class)</p>  
+                    <p>We can see results immediately improve with this addition. Epoch 1 already display legible digits, and epoch 10 has beautifully generated images with few flaws.</p> 
+                    <p>I tested training the UNet with and without a learning scheduler and results were practically identical. The loss changed at a very similar rate and end results both looked fantastic.</p>
+                </div>
+                <div class="image-gallery">
+                    <h2>Epoch 1</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/epoch1_2.6.png">
+                    </div>
+                    <h2>Epoch 5</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/epoch5_2.6.png">
+                    </div>
+                    <h2>Epoch 10 with scheduler</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/epoch10_2.6.png">
+                    </div>
+                    <h2>Epoch 10 without scheduler</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/epoch10_2.6nosche.png">
+                    </div>
+                    <h2>Loss from 0 - 9800 iterations and loss from 0 - 980 iterations with no scheduler</h2>
+                    <div class="image-wrapper-col">
+                        <img src="../5b_results/loss_2.6_nosche.png">
+                    </div>
+                    
+                </div>
+            </div>
+
+
+
+        </main>
+
+        <!-- Footer Section -->
+        <footer class="page-footer">
+            <p>&copy; 2025 Eric Khodorenko</p>
+            <p>https://khody12.github.io/project5/index.html</p>
+        </footer>
+
+    </div>
+</body>
+</html>

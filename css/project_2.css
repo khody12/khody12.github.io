@@ -57,7 +57,7 @@ h1, h2, h3 {
 }
 
 
-@media (min-width: 768px) {
+@media (min-width:2000px) {
     .main-section {
         flex-direction: row; 
     }
@@ -70,7 +70,7 @@ h1, h2, h3 {
     justify-content: center; 
 }
 
-@media (min-width: 768px) {
+@media (min-width: 2000px) {
     .text-column {
         width: 40%; 
     }
@@ -94,7 +94,7 @@ h1, h2, h3 {
     align-items:center;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 2000px) {
     .image-column {
         width: 60%; 
     }

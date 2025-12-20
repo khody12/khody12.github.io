@@ -29,7 +29,7 @@ def set_seed(seed):
 set_seed(180)
 
 device = "mps" # change if you are going to run this on colab like i did
-data = np.load(f"./data/lego_200x200.npz")
+data = np.load(f"./data/lafufu_dataset.npz")
 h, w = data["images_train"].shape[1:3]
 
 torch.manual_seed(180)
@@ -49,16 +49,18 @@ c2ws_val = torch.tensor(data["c2ws_val"],  device=device, dtype=torch.float32)
 
 # Test cameras for novel-view video rendering: 
 # (camera-to-world transformation matrix): [60, 4, 4]
-c2ws_test = torch.tensor(data["c2ws_test"], device=device, dtype=torch.float32)
+# c2ws_test = torch.tensor(data["c2ws_test"], device=device, dtype=torch.float32)
 
 # Camera focal length
-focal = torch.tensor(data["focal"], device=device, dtype=torch.float32)  # float
+# focal = torch.tensor(data["focal"], device=device, dtype=torch.float32)  # float
 
-K = torch.tensor([
-    [focal, 0, w / 2.0],
-    [0, focal, h / 2.0],
-    [0, 0, 1]
-], device=device, dtype=torch.float32)
+# K = torch.tensor([
+#     [focal, 0, w / 2.0],
+#     [0, focal, h / 2.0],
+#     [0, 0, 1]
+# ], device=device, dtype=torch.float32)
+
+K = torch.tensor(data["K"], device=device, dtype=torch.float32)
 
 K_inv = torch.linalg.inv(K)
 
@@ -129,7 +131,7 @@ h, w, _ = image.shape
 t_width = 4 / 64
 
 
-def sample_along_rays(r_o, r_d, perturb=True, near=2, far=6, n_samples=64):
+def sample_along_rays(r_o, r_d, perturb=True, near=0.2, far=0.5, n_samples=32):
     t = torch.linspace(near, far, n_samples, device=device)
     if perturb:
         t = t + torch.rand_like(t) * (far - near) / n_samples
@@ -146,7 +148,7 @@ import viser, time  # pip install viser
 
 H, W = images_train.shape[1:3]
 
-# server = viser.ViserServer(share=True)
+server = viser.ViserServer(share=True)
 
 combined_train = torch.cat([images_train, images_val], dim=0)
 combined_c2ws = torch.cat([c2ws_train, c2ws_val],dim=0)
@@ -157,43 +159,43 @@ rays_o, rays_d, pixels = dataset.sample_rays(100)
 
 points = sample_along_rays(rays_o, rays_d, perturb=True)
 
-# for i, (image, c2w) in enumerate(zip(combined_train, combined_c2ws)):
+for i, (image, c2w) in enumerate(zip(combined_train, combined_c2ws)):
   
-#   image_np = image.detach().cpu().numpy()
-#   c2w_np = c2w.detach().cpu().numpy()
-#   K_focal_np = K[0, 0].detach().cpu().numpy() 
+  image_np = image.detach().cpu().numpy()
+  c2w_np = c2w.detach().cpu().numpy()
+  K_focal_np = K[0, 0].detach().cpu().numpy() 
   
-#   server.scene.add_camera_frustum(
-#     f"/cameras/{i}",
-#     fov=2 * np.arctan2(H / 2, K_focal_np), 
-#     aspect=W / H,
-#     scale=0.02, # need to adjust if you're using my data or lego data. my data is too tight on scale =0.15
-#     wxyz=viser.transforms.SO3.from_matrix(c2w_np[:3, :3]).wxyz,
-#     position=c2w_np[:3, 3],
-#     image=image_np
-#   )
-#   rays_o, rays_d, pixels = dataset.sample_rays(100)
-#   points = sample_along_rays(rays_o, rays_d, perturb=True)
-#   ray_data = {"rays_o": rays_o, "rays_d": rays_d}
+  server.scene.add_camera_frustum(
+    f"/cameras/{i}",
+    fov=2 * np.arctan2(H / 2, K_focal_np), 
+    aspect=W / H,
+    scale=0.02, # need to adjust if you're using my data or lego data. my data is too tight on scale =0.15
+    wxyz=viser.transforms.SO3.from_matrix(c2w_np[:3, :3]).wxyz,
+    position=c2w_np[:3, 3],
+    image=image_np
+  )
+  rays_o, rays_d, pixels = dataset.sample_rays(100)
+  points = sample_along_rays(rays_o, rays_d, perturb=True)
+  ray_data = {"rays_o": rays_o, "rays_d": rays_d}
 
-#   for i, (o, d) in enumerate(zip(ray_data["rays_o"], ray_data["rays_d"])):
-#     o_np = o.detach().cpu().numpy()
-#     d_np = d.detach().cpu().numpy()
+  for i, (o, d) in enumerate(zip(ray_data["rays_o"], ray_data["rays_d"])):
+    o_np = o.detach().cpu().numpy()
+    d_np = d.detach().cpu().numpy()
 
-#     positions = np.stack((o_np, o_np + d_np * 6.0))
-#     server.add_spline_catmull_rom(
-#         f"/rays/{i}", positions=positions,
-#     )
-#     points_np = points.detach().cpu().numpy() 
+    positions = np.stack((o_np, o_np + d_np * 6.0))
+    server.add_spline_catmull_rom(
+        f"/rays/{i}", positions=positions,
+    )
+    points_np = points.detach().cpu().numpy() 
 
-#     server.add_point_cloud(
-#         f"/samples",
-#         colors=np.zeros_like(points_np).reshape(-1, 3), 
-#         points=points_np.reshape(-1, 3),
-#         point_size=0.03,
-#     )
-# while True:
-#     time.sleep(0.1)
+    server.add_point_cloud(
+        f"/samples",
+        colors=np.zeros_like(points_np).reshape(-1, 3), 
+        points=points_np.reshape(-1, 3),
+        point_size=0.03,
+    )
+while True:
+    time.sleep(0.1)
     
 
 def positional_encoding(coords, positional_frequency):

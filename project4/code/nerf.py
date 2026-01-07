@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import random
-import matplotlib as plt
+import matplotlib.pyplot as plt
 from tqdm import tqdm
 import math
 import imageio
@@ -29,7 +29,7 @@ def set_seed(seed):
 set_seed(180)
 
 device = "mps" # change if you are going to run this on colab like i did
-data = np.load(f"./data/lafufu_dataset.npz")
+data = np.load(f"./data/my_data.npz")
 h, w = data["images_train"].shape[1:3]
 
 torch.manual_seed(180)
@@ -49,21 +49,50 @@ c2ws_val = torch.tensor(data["c2ws_val"],  device=device, dtype=torch.float32)
 
 # Test cameras for novel-view video rendering: 
 # (camera-to-world transformation matrix): [60, 4, 4]
-# c2ws_test = torch.tensor(data["c2ws_test"], device=device, dtype=torch.float32)
+c2ws_test = torch.tensor(data["c2ws_test"], device=device, dtype=torch.float32)
 
 # Camera focal length
-# focal = torch.tensor(data["focal"], device=device, dtype=torch.float32)  # float
-
+#focal = torch.tensor(data["focal"], device=device, dtype=torch.float32)  # float
+ 
 # K = torch.tensor([
 #     [focal, 0, w / 2.0],
 #     [0, focal, h / 2.0],
 #     [0, 0, 1]
 # ], device=device, dtype=torch.float32)
 
-K = torch.tensor(data["K"], device=device, dtype=torch.float32)
+K = torch.tensor(data["K_matrix"], device=device, dtype=torch.float32)
 
 K_inv = torch.linalg.inv(K)
 
+img = images_train[0]
+c2w = c2ws_train[0]
+h, w = img.shape[:2]
+
+img_cpu = img.cpu().numpy()       # Shape: (H, W, 3)
+c2w_cpu = c2w.cpu().numpy()       # Shape: (4, 4)
+K_cpu = K.cpu().numpy()           # Shape: (3, 3)
+
+# 2. Project World Origin (0,0,0) into Pixel Coordinates
+world_point = np.array([0.0, 0.0, 0.0, 1.0]) 
+
+# World -> Camera (Using Numpy inverse now)
+w2c = np.linalg.inv(c2w_cpu) 
+camera_point = w2c @ world_point
+camera_point = camera_point[:3] / camera_point[3] 
+
+# Camera -> Pixel
+uv = K_cpu @ camera_point
+u = uv[0] / uv[2]
+v = uv[1] / uv[2]
+
+print(f"Projected Tag Center: {u:.2f}, {v:.2f}")
+
+# 3. Visualize
+plt.figure(figsize=(10, 10))
+plt.imshow(img_cpu) 
+plt.plot(u, v, 'rx', markersize=20, markeredgewidth=3) # Red X
+plt.title(f"Check: Is the Red X on the ArUco Tag?\nImage Size: {w}x{h}")
+plt.show()
 
 class DataLoader:
     def __init__(self, images, K, c2w):
@@ -131,7 +160,7 @@ h, w, _ = image.shape
 t_width = 4 / 64
 
 
-def sample_along_rays(r_o, r_d, perturb=True, near=0.2, far=0.5, n_samples=32):
+def sample_along_rays(r_o, r_d, perturb=True, near=2, far=9, n_samples=32):
     t = torch.linspace(near, far, n_samples, device=device)
     if perturb:
         t = t + torch.rand_like(t) * (far - near) / n_samples
@@ -169,12 +198,12 @@ for i, (image, c2w) in enumerate(zip(combined_train, combined_c2ws)):
     f"/cameras/{i}",
     fov=2 * np.arctan2(H / 2, K_focal_np), 
     aspect=W / H,
-    scale=0.02, # need to adjust if you're using my data or lego data. my data is too tight on scale =0.15
+    scale=0.2, # need to adjust if you're using my data or lego data. my data is too tight on scale =0.15
     wxyz=viser.transforms.SO3.from_matrix(c2w_np[:3, :3]).wxyz,
     position=c2w_np[:3, 3],
     image=image_np
   )
-  rays_o, rays_d, pixels = dataset.sample_rays(100)
+  rays_o, rays_d, pixels = dataset.sample_rays(0)
   points = sample_along_rays(rays_o, rays_d, perturb=True)
   ray_data = {"rays_o": rays_o, "rays_d": rays_d}
 

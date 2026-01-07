@@ -3,474 +3,354 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project 4: NeRF</title>
+    <title>Project 4: MLPs and NeRF</title>
     
-    <!-- Link to your external CSS stylesheet -->
-    <link rel="stylesheet" href="../../css/project_2.css">
+    <link rel="stylesheet" href="../../css/global.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <!-- Link to Google Fonts (Playfair Display for headings, Source Serif Pro for body) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <script>
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
+
 <body>
 
-    <!-- A main container to center the content on the page -->
     <div class="container">
-
-        <!-- Header Section -->
-        <header class="page-header">
+        
+        <header class="site-header">
+            <a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Portfolio</a>
             <h1>MLPs and NeRF</h1>
-            <nav>
-                <a href="../index.html" class="home-button">Home</a>
-            </nav>
+            <p>CS180 Project 4</p>
         </header>
 
-        <!-- Main Content Section -->
-        <main class="main-content">
-            <!-- Left Column: Introduction Text -->
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>Using MLPs for 2D Images</h1>
-                        <p>Before I utilize MLPs for NeRF. I'll utilize a simpler MLP to understand the image data of a 2D image.</p>
-                        <p>Here is an image of the architecture I used. I utilized 4 linear layers of width 256. Using 3 ReLU activation functions between layers and a final sigmoid to transform the 3 nodes outputted by the last layer into usable RGB values.</p>
-                        <p>Additionally, I used MSE for the loss function, an Adam optimizer, and learning rate of 1e-2. To get my results, I ran for around 2500-3000 iterations with a batch size of 10k.</p>
-                    </div>
-                </div>
+        <div class="content-wrapper">
 
-                <!-- Right Column: Images -->
-                <div class="image-column">
-                    <div class="image-gallery">
-                        <div class="image-wrapper-col">
-                            <img src="./mlp_images/model_arch.png">
-                        </div>
-                    </div>
+            <section class="text-block">
+                <h2>Using MLPs for 2D Images</h2>
+                <p>Before I utilize MLPs for NeRF. I'll utilize a simpler MLP to understand the image data of a 2D image.</p>
+                <p>Here is an image of the architecture I used. I utilized 4 linear layers of width 256. Using 3 ReLU activation functions between layers and a final sigmoid to transform the 3 nodes outputted by the last layer into usable RGB values.</p>
+                <p>Additionally, I used MSE for the loss function, an Adam optimizer, and learning rate of 1e-2. To get my results, I ran for around 2500-3000 iterations with a batch size of 10k.</p>
+            </section>
+
+            <div class="gallery-grid grid-1">
+                <div class="gallery-item">
+                    <img src="./mlp_images/model_arch.png" alt="Model Architecture">
+                    <div class="caption">MLP Architecture</div>
                 </div>
             </div>
 
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>Using MLPs for 2D Images</h1>
-                        <p>Looking at the first example here, we have an image of a fox and we can see how the MLP learns to properly represent the image over training iterations.</p>
-                        <p>We start with our base random weights and get just a gray image, and slowly the model learns how to represent the image.</p>
+            <section class="text-block">
+                <h3>Training Progress: The Fox</h3>
+                <p>Looking at the first example here, we have an image of a fox and we can see how the MLP learns to properly represent the image over training iterations.</p>
+                <p>We start with our base random weights and get just a gray image, and slowly the model learns how to represent the image.</p>
+            </section>
 
-                    </div>
+            <div class="comp-container" style="margin-bottom: 2rem;">
+                <img class="comp-img" src="./mlp_images/epoch2500_fox.png" alt="Iteration 2500">
+                <div class="comp-label label-right">Iteration 2500</div>
+                
+                <div class="comp-overlay" style="width: 50%;">
+                    <img src="./mlp_images/epoch100_fox.png" alt="Iteration 100">
                 </div>
-
-                <!-- Right Column: Images -->
-                <div class="photo-section">
-                        <div class="photo-wrapper">
-                            <h3>Iteration 0</h5>
-                            <img src="./mlp_images/epoch0_fox.png">
-                        </div>
-                        <div class="photo-wrapper">
-                            <h3>Iteration 100</h5>
-                            <img src="./mlp_images/epoch100_fox.png">
-                        </div>
-                        <div class="photo-wrapper">
-                            <h3>Iteration 250</h5>
-                            <img src="./mlp_images/epoch250_fox.png">
-                        </div>
-                        <div class="photo-wrapper">
-                            <h3>Iteration 500</h5>
-                            <img src="./mlp_images/epoch500_fox.png">
-                        </div>
-                        <div class="photo-wrapper">
-                            <h3>Iteration 1000</h5>
-                            <img src="./mlp_images/epoch1000_fox.png">
-                        </div>
-                        <div class="photo-wrapper">
-                            <h3>Iteration 2500</h5>
-                            <img src="./mlp_images/epoch2500_fox.png">
-                        </div>
-                </div>
-            </div>  
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>MLP on Golden Gate</h1>
-                        <p>Here's another example of using an MLP. Here we have a bit of a different scene. I zoomed in on The Golden Gate during sunset in Berkeley. The MLP is able to get most of the detail here.
-                            But does falter on the small details of the golden gate. It's just slightly less sharp than the original image at 3000 iterations. Partially due to low light, and also because the bridge at this distance is quite small. More complex scenes will need more layers and more training time.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Right Column: Images -->
-                <div class="photo-section">
-                        <div class="photo-wrapper">
-                            <h3>Iteration 0</h5>
-                            <img src="./mlp_images/epoch0_gg.png">
-                        </div>
-                        <div class="photo-wrapper">
-                            <h3>Iteration 100</h5>
-                            <img src="./mlp_images/epoch100_gg.png">
-                        </div>
-                        <div class="photo-wrapper">
-                            <h3>Iteration 250</h5>
-                            <img src="./mlp_images/epoch250_gg.png">
-                        </div>
-                        <div class="photo-wrapper">
-                            <h3>Iteration 500</h5>
-                            <img src="./mlp_images/epoch500_gg.png">
-                        </div>
-                        <div class="photo-wrapper">
-                            <h3>Iteration 1000</h5>
-                            <img src="./mlp_images/epoch1000_gg.png">
-                        </div>
-                        <div class="photo-wrapper">
-                            <h3>Iteration 2500</h5>
-                            <img src="./mlp_images/epoch2500_gg.png">
-                        </div>
-                </div>
+                <div class="comp-label label-left">Iteration 100</div>
             </div>
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>PSNR Graph For the Golden Gate</h1>
-                        <p>To measure performance of an MLP, we often use a PSNR (Peak Signal-to-Noise Graph). Here is the PSNR for the training of the Golden Gate image.</p>
-                        <p>We see rapid training at first then a slow tapering off. We can still get better results by training more with the current model but we get massively diminished returns.</p>
-                    </div>
-                </div>
 
-                <!-- Right Column: Images -->
-                <div class="image-gallery">
-                    <div class="image-wrapper-col">
-                        <img src="./mlp_images/psnr_gg.png">
-                    </div>
+            <div class="gallery-grid grid-3">
+                <div class="gallery-item"><img src="./mlp_images/epoch0_fox.png"><div class="caption">Iteration 0</div></div>
+                <div class="gallery-item"><img src="./mlp_images/epoch100_fox.png"><div class="caption">Iteration 100</div></div>
+                <div class="gallery-item"><img src="./mlp_images/epoch250_fox.png"><div class="caption">Iteration 250</div></div>
+                <div class="gallery-item"><img src="./mlp_images/epoch500_fox.png"><div class="caption">Iteration 500</div></div>
+                <div class="gallery-item"><img src="./mlp_images/epoch1000_fox.png"><div class="caption">Iteration 1000</div></div>
+                <div class="gallery-item"><img src="./mlp_images/epoch2500_fox.png"><div class="caption">Iteration 2500</div></div>
+            </div>
+
+            <hr>
+
+            <section class="text-block">
+                <h2>MLP on The Golden Gate</h2>
+                <p>Here's another example of using an MLP. Here we have a bit of a different scene. I zoomed in on The Golden Gate during sunset in Berkeley. The MLP is able to get most of the detail here.</p>
+                <p>But does falter on the small details of the golden gate. It's just slightly less sharp than the original image at 3000 iterations. Partially due to low light, and also because the bridge at this distance is quite small. More complex scenes will need more layers and more training time.</p>
+            </section>
+
+            <div class="gallery-grid grid-3">
+                <div class="gallery-item"><img src="./mlp_images/epoch0_gg.png"><div class="caption">Iteration 0</div></div>
+                <div class="gallery-item"><img src="./mlp_images/epoch100_gg.png"><div class="caption">Iteration 100</div></div>
+                <div class="gallery-item"><img src="./mlp_images/epoch250_gg.png"><div class="caption">Iteration 250</div></div>
+                <div class="gallery-item"><img src="./mlp_images/epoch500_gg.png"><div class="caption">Iteration 500</div></div>
+                <div class="gallery-item"><img src="./mlp_images/epoch1000_gg.png"><div class="caption">Iteration 1000</div></div>
+                <div class="gallery-item"><img src="./mlp_images/epoch2500_gg.png"><div class="caption">Iteration 2500</div></div>
+            </div>
+
+            <div class="gallery-grid grid-1">
+                 <div class="gallery-item">
+                    <img src="./mlp_images/psnr_gg.png" alt="PSNR Graph">
+                    <div class="caption">PSNR Graph (Rapid initial learning, then diminishing returns)</div>
                 </div>
             </div>
 
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>Comparing Results for Different Positional Encoding Frequencies and MLP Layer Widths.</h1>
-                        <p>The performance changes massively if the frequency of either the width or the positional encoding is substantially changed.</p>
-                        <p>Having a high positional encoding allows the model to learn much better as the input tensor is substantially larger. If shrinks, performance suffers.</p>
-                        <p>Having a healthy layer width is also quite important and allows the model to understand higher frequencies. As seen here, higher frequencies get completely lost when frequency or width is too low.</p>
-                    </div>
-                </div>
+            <section class="text-block">
+                <h2>Hyperparameter Tuning: Frequency & Width</h2>
+                <p>The performance changes massively if the frequency of either the width or the positional encoding is substantially changed.</p>
+                <p>Having a high positional encoding allows the model to learn much better as the input tensor is substantially larger. If shrinks, performance suffers.</p>
+                <p>Having a healthy layer width is also quite important and allows the model to understand higher frequencies. As seen here, higher frequencies get completely lost when frequency or width is too low.</p>
+            </section>
 
-                <!-- Right Column: Images -->
-                <div class="photo-section">
-                    <div class="photo-wrapper">
-                        <p>Width 256, frequency 10</p>
-                        <img src="./mlp_images/epoch2500_gg.png">
-                    </div>
-                    <div class="photo-wrapper">
-                        <p>Width 32, frequency 3</p>
-                        <img src="./mlp_images/epoch2500_posfreq10_width32_gg.png">
-                    </div>
-                    <div class="photo-wrapper">
-                        <p>Width 32, frequency 3</p>
-                        <img src="./mlp_images/epoch2500_posfreq3_width256_gg.png">
-                    </div>
-                    <div class="photo-wrapper">
-                        <p>Width 32, frequency 3</p>
-                        <img src="./mlp_images/epoch2500_posfreq3_width32_gg.png">
-                    </div>
+            <div class="comp-container" style="margin-bottom: 2rem;">
+                <img class="comp-img" src="./mlp_images/epoch2500_gg.png" alt="Width 256, Freq 10">
+                <div class="comp-label label-right">Width 256, Freq 10</div>
+                
+                <div class="comp-overlay" style="width: 50%;">
+                    <img src="./mlp_images/epoch2500_posfreq3_width32_gg.png" alt="Width 32, Freq 3">
+                </div>
+                <div class="comp-label label-left">Width 32, Freq 3</div>
+            </div>
+
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./mlp_images/epoch2500_gg.png" alt="W256 F10">
+                    <div class="caption">Width 256, Freq 10 (Best)</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./mlp_images/epoch2500_posfreq10_width32_gg.png" alt="W32 F10">
+                    <div class="caption">Width 32, Freq 10</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./mlp_images/epoch2500_posfreq3_width256_gg.png" alt="W256 F3">
+                    <div class="caption">Width 256, Freq 3</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./mlp_images/epoch2500_posfreq3_width32_gg.png" alt="W32 F3">
+                    <div class="caption">Width 32, Freq 3 (Worst)</div>
                 </div>
             </div>
 
+            <hr>
 
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>Implementing a NeRF from Scratch</h1>
-                        <p>A NeRF works by shooting rays out of many images that are taking a picture of one object from different positions.</p>
-                        <p>Accordingly, the most important thing is having a way to sample rays.</p>
-                        <p>First, I worked to implement the camera-to-world coordinate conversion. This is the transformation between the world space X_w = (x_w, y_w, z_w) and the camera space X_c = (x_c, y_c, z_c).</p>
-                        <p>This can be defined as 3x3 rotation matrix and a translation vector like we see here.</p>
-                        <p>Here, I basically just take the camera-to-world matrix that is given by calibration, add ones to our coordinates and matrix multiply.</p>
-                    </div>
+            <section class="text-block">
+                <h2>Implementing a NeRF from Scratch</h2>
+                <p>A NeRF works by shooting rays out of many images that are taking a picture of one object from different positions. Accordingly, the most important thing is having a way to sample rays.</p>
+                
+                <h3>1. Camera-to-World Coordinate Conversion</h3>
+                <p>First, I worked to implement the camera-to-world coordinate conversion. This is the transformation between the world space $X_w = (x_w, y_w, z_w)$ and the camera space $X_c = (x_c, y_c, z_c)$.</p>
+                <p>This can be defined as a 3x3 rotation matrix and a translation vector. I take the camera-to-world matrix given by calibration, add ones to our coordinates, and matrix multiply.</p>
+            </section>
+
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./implementation_images/c2w_equation.png" alt="Equation">
+                    <div class="caption">Equation</div>
                 </div>
-                <div class="image-gallery">
-                    <div class="image-wrapper-col">
-                        <img src="./implementation_images/c2w_equation.png">
-                        <img src="./implementation_images/c2w_code.png">
-                    </div>
-                </div>  
+                <div class="gallery-item">
+                    <img src="./implementation_images/c2w_code.png" alt="Code">
+                    <div class="caption">Implementation</div>
+                </div>
             </div>
 
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>Implementing a NeRF from Scratch</h1>
-                        <p>Next, we need to implement pixel-to-camera conversion.</p>
-                        <p>The idea here is to take the intrinsic matrix of the camera and matrix multiply the inverse of the intrinsic by our pixel coordinates which is then scaled by a depth factor which we set to 1.</p>
-                        <p>Additionally, I add 0.5 to the pixel coordinates so that we're shooting rays from the center of the pixel rather than the top left.</p>
-                    </div>
+            <section class="text-block">
+                <h3>2. Pixel-to-Camera Conversion</h3>
+                <p>Next, we need to implement pixel-to-camera conversion. The idea here is to take the intrinsic matrix of the camera ($K$) and matrix multiply the inverse of the intrinsic by our pixel coordinates which is then scaled by a depth factor which we set to 1.</p>
+                <p>Additionally, I add 0.5 to the pixel coordinates so that we're shooting rays from the center of the pixel rather than the top left.</p>
+                <div style="overflow-x: auto; padding: 10px 0;">
+                    $$
+                    \begin{bmatrix} x_c \\ y_c \\ z_c \end{bmatrix} = K^{-1} \begin{bmatrix} u + 0.5 \\ v + 0.5 \\ 1 \end{bmatrix} \cdot z_{depth}
+                    $$
                 </div>
-                <div class="image-gallery">
-                    <div class="image-wrapper-col">
-                        <img src="./implementation_images/p2c_equation.png">
-                        <img src="./implementation_images/p2c_code.png">
-                    </div>
-                </div>  
+            </section>
+
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./implementation_images/p2c_equation.png" alt="Equation">
+                </div>
+                <div class="gallery-item">
+                    <img src="./implementation_images/p2c_code.png" alt="Code">
+                </div>
             </div>
 
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>Implementing a NeRF from Scratch</h1>
-                        <p>Next, we need to implement pixel-to-ray so that we can see what direction a ray goes so that we can eventually sample points along that ray.</p>
-                        <p>First we will retrieve the translation component from the camera-to-world matrix to obtain the origin of the ray. This is because the origin is just the location of 
-                            the camera in world coordinates.
-                        </p>
-                        <p>From here, we need to obtain the ray direction. So we choose a point along this ray where depth equals 1 and then find its coordinate X_w in the world space.</p>
-                        <p>The normalized ray direction is then X_w - r_o / L2 norm of (X_w - r_o).</p>
-                        <p>I implemented this by simply taking the origin from slicing the c2w matrix. Then I used my previously implemented pixel_to_camera and camera_to_world functions to first translate the pixel to the camera space, then from camera space to world space.</p>
-                        <p>Finally, I subtracted the ray origin from the world coordinate.</p>
-                        <p>Importantly, all of the above functions support batched coordinates by utilizing torch/numpy broadcasting so that we don't have to run for loops in the future.</p>
-                    </div>
+            <section class="text-block">
+                <h3>3. Pixel-to-Ray Conversion</h3>
+                <p>Next, we need to implement pixel-to-ray so that we can see what direction a ray goes so that we can eventually sample points along that ray.</p>
+                <p>First we will retrieve the translation component from the camera-to-world matrix to obtain the origin of the ray ($r_o$). This is because the origin is just the location of the camera in world coordinates.</p>
+                <p>From here, we need to obtain the ray direction. So we choose a point along this ray where depth equals 1 and then find its coordinate $X_w$ in the world space.</p>
+                <div style="margin: 1rem 0;">
+                    $$ \vec{d} = \frac{X_w - r_o}{||X_w - r_o||_2} $$
                 </div>
-                <div class="image-gallery">
-                    <div class="image-wrapper-col">
-                        <img src="./implementation_images/p2r_equation.png">
-                        <img src="./implementation_images/p2r_code.png">
-                    </div>
-                </div>  
-            </div>
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>Setting up the Dataloader</h1>
-                        <p>Now, we need to put it all together to build a functional dataloader that can sample rays and eventually feed it to our MLP model.</p>
-                        <p>In order to sample rays, I decided to precompute all possible rays. So for each image, I compute the ray for each pixel.</p>
-                        <p>This is implemented by first creating a grid of (u,v) coordinates that matches the shape of the image. This grid is repeated for each image that we have.</p>
-                        <p>Similarly, we need to repeat the camera-to-world matrix for each of these pixels so that each ray can eventually be sampled for training.</p>
-                        <p>I then call pixel_to_ray on this massive batch of pixels to create the full set of rays for my dataset.</p>
-                        <p></p>
-                        
-                    </div>
+                <p>I implemented this by simply taking the origin from slicing the c2w matrix. Then I used my previously implemented <code>pixel_to_camera</code> and <code>camera_to_world</code> functions to first translate the pixel to the camera space, then from camera space to world space.</p>
+                <p>Finally, I subtracted the ray origin from the world coordinate. Importantly, all of the above functions support batched coordinates by utilizing torch/numpy broadcasting so that we don't have to run for loops in the future.</p>
+            </section>
+
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./implementation_images/p2r_equation.png" alt="Equation">
                 </div>
-                <div class="image-gallery">
-                    <div class="image-wrapper-col">
-                        <img src="./implementation_images/dataloader_code.png">
-                    </div>
-                </div>  
+                <div class="gallery-item">
+                    <img src="./implementation_images/p2r_code.png" alt="Code">
+                </div>
             </div>
 
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>Sampling Rays</h1>
-                        <p>Now that we have a dataloader, we need to be able to create samples along the ray. The key here is we need a start and stop place to sample.</p>
-                        <p>In the classic lego dataset, the near is set to 2, far set to 6. So within this range we need to samples random points so that the model can learn the color and density of a particular point in space.</p>
-                        <p>We use numpy to randomly find points between 2 and 6 and then add these random values to set buckets defined by the length of the space we're sampling divided by the number of samples along the ray we need.</p>
-                        <p>This will give us the selected number of samples amount of points along the ray that we will use to train.</p>  
-                        <p>We can visualize what this looks like using viser.</p>                      
-                    </div>
+            <hr>
+
+            <section class="text-block">
+                <h2>Setting up the Dataloader & Sampling Rays</h2>
+                <p>Now, we need to put it all together to build a functional dataloader that can sample rays and eventually feed it to our MLP model.</p>
+                <p>In order to sample rays, I decided to precompute all possible rays. So for each image, I compute the ray for each pixel. This is implemented by first creating a grid of (u,v) coordinates that matches the shape of the image.</p>
+                <p>Now that we have a dataloader, we need to be able to create samples along the ray. The key here is we need a start and stop place to sample.</p>
+                <p>In the classic lego dataset, the near is set to 2, far set to 6. So within this range we need to samples random points so that the model can learn the color and density of a particular point in space.</p>
+                <p>We use numpy to randomly find points between 2 and 6. We can visualize what this looks like using Viser:</p>
+            </section>
+
+            <div class="gallery-grid grid-1">
+                 <!-- <div class="gallery-item">
+                    <img src="./implementation_images/dataloader_code.png" alt="Dataloader Code">
+                    <div class="caption">Dataloader Logic</div>
+                </div> -->
+                <div class="gallery-item">
+                    <img src="./rays_samples_lego/10cam_100ray.png" alt="10 Cam Rays">
+                    <div class="caption">10 Cameras, 100 Rays</div>
                 </div>
-                <div class="image-gallery">
-                    <div class="image-wrapper-col">
-                        <img src="./rays_samples_lego/10cam_100ray.png">
-                    </div>
-                    <div class="image-wrapper-col">
-                        <img src="./rays_samples_lego/allcam_100ray.png">
-                    </div>
-                </div>  
+                <div class="gallery-item">
+                    <img src="./rays_samples_lego/allcam_100ray.png" alt="All Cam Rays">
+                    <div class="caption">All Cameras, 100 Rays</div>
+                </div>
             </div>
 
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>MLP for NeRF</h1>
-                        <p>Finally, we have our model. This model is equipped with significantly more layers than our MLP model for 2D images.</p>
-                        <p>To implement this, I used torch layers and positional encoding along the 3 dimensions of our world coordinate. I used a positional frequency of 10 for the coordinate position, and a positional frequency of 4 for the ray direction.</p>
-                        <p>Positional encoding was implemented using sines and cosines as well as a range of multiples of 2 to let the model understand higher frequencies.</p>
-                        <p>Additionally, the 3D coordinate was concatenated halfway through the first set of linear layers to prevent the model from forgetting about the input.</p>
-                        <p>ReLU's are used for activations between layers and a final sigmoid is used for the ray direction to get an RGB value.</p>
-                    </div>
+            <section class="text-block">
+                <h2>MLP Architecture for NeRF</h2>
+                <p>Finally, we have our model. This model is equipped with significantly more layers than our MLP model for 2D images.</p>
+                <p>To implement this, I used torch layers and positional encoding along the 3 dimensions of our world coordinate. I used a positional frequency of 10 for the coordinate position, and a positional frequency of 4 for the ray direction.</p>
+                <p>Positional encoding was implemented using sines and cosines as well as a range of multiples of 2 to let the model understand higher frequencies. Additionally, the 3D coordinate was concatenated halfway through the first set of linear layers to prevent the model from forgetting about the input (skip connection).</p>
+            </section>
+
+            <div class="gallery-grid grid-1">
+                <div class="gallery-item">
+                    <img src="./implementation_images/model_arch.png" alt="NeRF Arch">
+                    <div class="caption">NeRF Architecture with Skip Connections</div>
                 </div>
-                <div class="image-gallery-2">
-                    <div class="image-wrapper-col">
-                        <img src="./implementation_images/model_arch.png">
-                    </div>
-                </div>  
             </div>
 
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>Volume Rendering Function</h1>
-                        <p>Now we have the most intriguing part of the NeRF project. The idea of assigning every point that we sample in space a certain density and color. Then integrating along a ray to get the final color and density.</p>
-                        <p>Each sample along the ray has a weight assigned to it based on the probability that a ray hits it first before hitting any other ray.</p>
-                        <p>We will take the probability of a ray not terminating before a sample location, then multiply that by the probability of terminating at the sample location, finally it's scaled by the color obtained by the network at the sample location.</p>
-                        <p>To implement this function, I'll take in the density and rgb values that my model is predicting for a specific location. Calculate the transmittance values and the probabilities. Then </p>
-                        <p>This can be implemeted by utilizing torch.cumprod and torch.sum. We use torch.cumprod to get the values of the probability of not terminating before a sample location i.</p>
-                        <p>Then I use torch.sum to get the total value of the transmittances multiplied by the probabilities which gives us the final color.</p>
-                    </div>
+            <section class="text-block">
+                <h2>Volume Rendering Function</h2>
+                <p>Now we have the most intriguing part of the NeRF project. The idea of assigning every point that we sample in space a certain density and color, then integrating along a ray to get the final color.</p>
+                <p>Each sample along the ray has a weight assigned to it based on the probability that a ray hits it first before hitting any other ray.</p>
+                <p>We will take the probability of a ray not terminating before a sample location, then multiply that by the probability of terminating at the sample location, finally it's scaled by the color obtained by the network.</p>
+                <div style="margin: 1rem 0; font-size: 1.1rem;">
+                    $$ \hat{C}(\mathbf{r}) = \sum_{i=1}^N T_i (1 - \exp(-\sigma_i \delta_i)) \mathbf{c}_i $$
+                    $$ \text{where } T_i = \exp\left(-\sum_{j=1}^{i-1} \sigma_j \delta_j\right) $$
                 </div>
-                <div class="image-gallery">
-                    <h2>The ideal function</h2>
-                    <div class="image-wrapper-col">
-                        <img src="./implementation_images/volrend.png">
-                    </div>
-                    <h2>The approximation function that allows us to implement this with ray sampling</h2>
-                    <div class="image-wrapper-col">
-                        <img src="./implementation_images/volrend2.png">
-                    </div>
-                </div>  
+                <p>This can be implemented by utilizing <code>torch.cumprod</code> and <code>torch.sum</code>.</p>
+            </section>
+
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./implementation_images/volrend.png" alt="Ideal Function">
+                    <div class="caption">Ideal Continuous Integral</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./implementation_images/volrend2.png" alt="Approximation Function">
+                    <div class="caption">Discrete Approximation (Implemented)</div>
+                </div>
             </div>
 
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>Training the NeRF on the Lego Dataset</h1>
-                        <p>We can take a look at how the model will train on the lego dataset here from 0 to 1900 iterations.</p>
-                        <p>It starts off as a fuzzy messy but slowly starts to sharpen up and by iteration 1900 or so begins to look pretty reasonable.</p>
-                    </div>
-                </div>
-                <div class="photo-section">
-                    <div class="photo-wrapper">
-                        <h3>Iteration 100</h5>
-                        <img src="./lego_results/render_100.JPG">
-                    </div>
-                    <div class="photo-wrapper">
-                        <h3>Iteration 200</h5>
-                        <img src="./lego_results/render_200.JPG">
-                    </div>
-                    <div class="photo-wrapper">
-                        <h3>Iteration 300</h5>
-                        <img src="./lego_results/render_300.JPG">
-                    </div>
-                    <div class="photo-wrapper">
-                        <h3>Iteration 500</h5>
-                        <img src="./lego_results/render_500.JPG">
-                    </div>
-                    <div class="photo-wrapper">
-                        <h3>Iteration 700</h5>
-                        <img src="./lego_results/render_700.JPG">
-                    </div>
-                    <div class="photo-wrapper">
-                        <h3>Iteration 1000</h5>
-                        <img src="./lego_results/render_1000.JPG">
-                    </div>
-                    <div class="photo-wrapper">
-                        <h3>Iteration 1500</h5>
-                        <img src="./lego_results/render_1500.JPG">
-                    </div>
-                    <div class="photo-wrapper">
-                        <h3>Iteration 1900</h5>
-                        <img src="./lego_results/render_1900.JPG">
-                    </div>
-                </div>  
+            <hr>
+
+            <section class="text-block">
+                <h2>Training the NeRF on the Lego Dataset</h2>
+                <p>We can take a look at how the model will train on the lego dataset here from 0 to 1900 iterations.</p>
+                <p>It starts off as a fuzzy mess but slowly starts to sharpen up and by iteration 1900 or so begins to look pretty reasonable.</p>
+            </section>
+
+            <div class="gallery-grid grid-3">
+                <div class="gallery-item"><img src="./lego_results/render_100.JPG"><div class="caption">Iter 100</div></div>
+                <div class="gallery-item"><img src="./lego_results/render_200.JPG"><div class="caption">Iter 200</div></div>
+                <div class="gallery-item"><img src="./lego_results/render_300.JPG"><div class="caption">Iter 300</div></div>
+                <div class="gallery-item"><img src="./lego_results/render_500.JPG"><div class="caption">Iter 500</div></div>
+                <div class="gallery-item"><img src="./lego_results/render_700.JPG"><div class="caption">Iter 700</div></div>
+                <div class="gallery-item"><img src="./lego_results/render_1000.JPG"><div class="caption">Iter 1000</div></div>
+                <div class="gallery-item"><img src="./lego_results/render_1500.JPG"><div class="caption">Iter 1500</div></div>
+                <div class="gallery-item"><img src="./lego_results/render_1900.JPG"><div class="caption">Iter 1900</div></div>
             </div>
 
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>PSNR curve and Lego GIF</h1>
-                        <p>We can take a look at how the PSNR goes over time on the validation set and the final GIF product of our lego dataset.</p>
-                    </div>
+            <section class="text-block">
+                <h3>Final Lego Results</h3>
+            </section>
+
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./lego_results/lego_gif.gif" alt="Lego GIF">
+                    <div class="caption">Final Rendered GIF</div>
                 </div>
-                <div class="image-gallery">
-                    <div class="image-wrapper-col">
-                        <img src="./lego_results/lego_gif.gif">
-                    </div>
-                    <div class="image-wrapper-col">
-                        <img src="./lego_results/lego_psnr_val.png">
-                    </div>
-                </div>  
+                <div class="gallery-item">
+                    <img src="./lego_results/lego_psnr_val.png" alt="PSNR Curve">
+                    <div class="caption">Validation PSNR Curve</div>
+                </div>
             </div>
 
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>Calibrating my iPhone Camera with Aruco Tags and Creating a NeRF on my own dataset.</h1>
-                        <p>Now that I have created a NeRF of the classic Lego dataset. I'll move on to trying it on my own data.</p>
-                        <p>Creating a NeRF with data captured on my phone in location around my apartment proved to be easier said than done. Aliasing on the many pieces of wood in the apartment made this tricky and I didn't trust the NeRF to deal with this so I laid pieces of paper down underneath my object to reduce error.</p>
-                        <p>Once I calibrated my camera via Aruco tags. I needed to undistort the images that I captured of my object. The iPhone camera didn't have a lot on the wide angle lens, but there was still some minor editing needed to be done.</p>
-                        <p>Here is the visualization of my rays in viser.</p>
-                    </div>
+            <hr>
+
+            <section class="text-block">
+                <h2>NeRF on My Own Dataset</h2>
+                <p>Creating a NeRF with data captured on my phone in location around my apartment proved to be easier said than done. Aliasing on the many pieces of wood in the apartment made this tricky and I didn't trust the NeRF to deal with this so I laid pieces of paper down underneath my object to reduce error.</p>
+                <p>Once I calibrated my camera via Aruco tags. I needed to undistort the images that I captured of my object.</p>
+            </section>
+
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./my_nerf_results/cameras.png" alt="Cameras">
+                    <div class="caption">Reconstructed Camera Poses</div>
                 </div>
-                <div class="image-gallery">
-                    <div class="image-wrapper-col">
-                        <img src="./my_nerf_results/cameras.png">
-                    </div>
-                    <div class="image-wrapper-col">
-                        <img src="./my_nerf_results/cams_and_rays.png">
-                    </div>
-                </div>  
+                <div class="gallery-item">
+                    <img src="./my_nerf_results/cams_and_rays.png" alt="Rays">
+                    <div class="caption">Rays in Viser</div>
+                </div>
             </div>
 
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>Training the NeRF model on my data</h1>
-                        <p>This process unfortunately did not go smoothly. While training PSNR steadily rose to more than 18, validation PSNR did not fare well. Validation PSNR peaked at around 13.5 at iteration 500-700 and gradually slipped to 12 as iterations went to 3000.</p>
-                        <p>You can generally see the white paper that the object should be sitting on top of, but generally it is not super clear.</p>
-                        <p>If I had to think of reasons why my results don't look great here. I think there might be some inaccuracy with the aruco tags I chose as across a few different calibration attempts, I often got different results.</p>
-                        <p>My focal lengths stayed in around the same territory of 200's, but sometimes low 200 like 200, 201, sometimes up to 215. Distortion also jumped around quite a bit from really quite significant numbers, to relatively low numbers for the calibration images I landed on</p>
-                        <p>The actual model and ray sampling should be quite reasonable as the lego dataset reached healthy PSNR values and the frustum visualization of my rays for my own data also looked reasonable, but certainly not as good as the lego dataset.</p>
-                    </div>
-                </div>
-                <div class="image-gallery">
-                    <div class="image-wrapper-col">
-                        <img src="./my_nerf_results/personal_nerf_train_psnr.png">
-                    </div>
-                    <div class="image-wrapper-col">
-                        <img src="./my_nerf_results/my_nerf_render.gif">
-                    </div>
-                </div>
+            <section class="text-block">
+                <h3>Challenges & Analysis</h3>
+                <p>This process was somewhat painstaking. I went through many iterations of calibration till I ended up with a result that had legible results.</p>
+                <p>One thing that is critical is during the NeRF process, you should really try to make sure the aruco tags end up in the corners of your shot so that they can capture more distortion. Second, taking lots of photos like a dome over the calibration introduces lots of error and is not helpful. All you need is many variations of 3 main angles, top down, about 45 degrees, and then really quite low, almost parallel to the paper.</p>
+                <p>Next, scenes that have a variety of different colors are important for debugging. I, in error, thought that trying a scene like a carpet with a very constant color and then an object on top of it would make the training process more smooth but I found that the model could find lots more local minimas where it just memorizes the average color within 100 iterations and gets quite high PSNR values (20+).</p>
+                <p>In the end, I decided on a smaller arc shape instead of a 360 dome and I increased training images from ~35 to ~70. This caused drastically increased performance despite PSNR values not being terribly high at around ~17 when trained for 5000 iterations.</p>
+                <p>With that said, in this approach, my validation PSNR value was quite close to my training PSNR. Most of the error came from a part of the image seeing far into the background while most of the image was focused on the desk.</p>
+                
+                
+            </section>
 
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./my_nerf_results/personal_nerf_train_psnr.png" alt="PSNR">
+                    <div class="caption">Training PSNR</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./my_nerf_results/personal_gif.gif" alt="GIF">
+                    <div class="caption">Final Result GIF</div>
+                </div>
             </div>
 
-            <div class="main-section">
-                <div class="text-column">
-                    <div class="text-content">
-                        <h1>Looking at Renders During the Training Process.</h1>
-                        <p>During the training process, it starts out as a blur and does start to sharpen over time. But it doesn't really capture the details of the scene.</p>
-                        <p>The table with white papers stacked on it does slowly start to come into view but the things around it, specifically in the background do not load in very well.</p>
-                        <p>While tuning hyperparameters for this model, I noticed I needed to reduce the near point for sampling down significantly. The scale that the lego dataset was using was about 10x greater than mine so it needed to be adjusted down to about 0.1 which is what I ultimately went with.</p>
-                        <p>I tried adjusting the far point to greater distances, but never could find a great sweet spot where the validation PSNR was able to actually track the training PSNR. With some more in depth tuning, I think it's possible that my data could work well but a potential issue is that the background might've been too much further away than the foreground.</p>
-                    </div>
-                </div>
-                <div class="photo-section">
-                    
-                    <div class="photo-wrapper">
-                        <h2>Render 100</h2>
-                        <img src="./my_nerf_results/render_100.JPG">
-                    </div>
-                    
-                    <div class="photo-wrapper">
-                        <h2>Render 500</h2>
-                        <img src="./my_nerf_results/render_500.JPG">
-                    </div>
-                    
-                    <div class="photo-wrapper">
-                        <h2>Render 1000</h2>
-                        <img src="./my_nerf_results/render_1000.JPG">
-                    </div>
-                    
-                    <div class="photo-wrapper">
-                        <h2>Render 1500</h2>
-                        <img src="./my_nerf_results/render_1500.JPG">
-                    </div>
-                    
-                    <div class="photo-wrapper">
-                        <h2>Render 2000</h2>
-                        <img src="./my_nerf_results/render_2000.JPG">
-                    </div>
-                    
-                    <div class="photo-wrapper">
-                        <h2>Render 2900</h2>
-                        <img src="./my_nerf_results/render_2900.JPG">
-                    </div>
-                </div>
+            <section class="text-block">
+                <h3>Evolution of the Custom Render</h3>
+                <p>During the training process, it starts out as a blur and does start to sharpen over time. But it doesn't really capture the details of the scene.</p>
+                <p>The table with white papers stacked on it does slowly start to come into view but the things around it, specifically in the background do not load in very well.</p>
+                <p>While tuning hyperparameters for this model, I noticed I needed to reduce the near point for sampling down significantly. The scale that the lego dataset was using was about 10x greater than mine so it needed to be adjusted down to about 0.1.</p>
+            </section>
 
+            <div class="gallery-grid grid-3">
+                <div class="gallery-item"><img src="./my_nerf_results/render_100.JPG"><div class="caption">Iter 100</div></div>
+                <div class="gallery-item"><img src="./my_nerf_results/render_300.JPG"><div class="caption">Iter 300</div></div>
+                <div class="gallery-item"><img src="./my_nerf_results/render_500.JPG"><div class="caption">Iter 500</div></div>
+                <div class="gallery-item"><img src="./my_nerf_results/render_1000.JPG"><div class="caption">Iter 1000</div></div>
+                <div class="gallery-item"><img src="./my_nerf_results/render_1500.JPG"><div class="caption">Iter 1500</div></div>
+                <div class="gallery-item"><img src="./my_nerf_results/render_2500.JPG"><div class="caption">Iter 2500</div></div>
             </div>
 
-        </main>
+        </div>
 
-        <!-- Footer Section -->
-        <footer class="page-footer">
+        <footer>
             <p>&copy; 2025 Eric Khodorenko</p>
-            <p>https://khody12.github.io/project4/index.html</p>
+            <p><a href="https://khody12.github.io/project4/index.html">Project Link</a></p>
         </footer>
 
     </div>
+
+    <script src="../../js/main.js"></script>
 </body>
 </html>

@@ -2,19 +2,20 @@
 import cv2
 import numpy as np
 import sklearn
+import sys
 
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 aruco_params = cv2.aruco.DetectorParameters()
 detector = cv2.aruco.ArucoDetector(aruco_dict, aruco_params)
 
-tag_point = np.array([[0.0, 0.0,  0.0], [0.02, 0.0, 0.0],
-    [0.02, 0.02, 0.0], [0.0,  0.02, 0.0]
+tag_point = np.array([[0.0, 0.0,  0.0], [0.05, 0.0, 0.0],
+    [0.05, 0.05, 0.0], [0.0,  0.05, 0.0]
 ])
 
 world_points = []
 image_points = []
 
-for i in range(0, 42):
+for i in range(0, 45):
     image = cv2.imread(f"./resized_calibration_images/im{i}.JPG", cv2.IMREAD_GRAYSCALE)    
     corners, ids, _ =  detector.detectMarkers(image)
 
@@ -44,13 +45,13 @@ images = []
 
 
 # go through our new images, detect the SINGLE aruco tag. so there should only be 1 corners list
-for i in range(0, 40):
+for i in range(0, 95):
     if i == 20:
         continue
     world_points = []
     image_points = []
 
-    image = cv2.imread(f"./nerf_data_images_2/im{i}.JPG")
+    image = cv2.imread(f"./final_data/im{i}.JPG")
     corners, ids, _ =  detector.detectMarkers(image)
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -69,7 +70,6 @@ for i in range(0, 40):
         images.append(image_rgb)
         R, _ = cv2.Rodrigues(rvec) 
         
-        
         w2c_matrix = np.eye(4, dtype=np.float32)
         w2c_matrix[:3, :3] = R
         w2c_matrix[:3, 3] = tvec.squeeze() # tvec is (3,1), make it (3,)
@@ -86,30 +86,33 @@ c2ws = np.array(c2ws)
 
 h, w = images[0].shape[:2]
 
-# cropping to remove black borders
-new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(intrinsic_mtx, dist, (w, h), alpha=0, newImgSize=(w, h)
-)
-
-x, y, w_roi, h_roi = roi
-
-
-K_final = new_camera_matrix.copy()
-K_final[0, 2] -= x  # adjust cx/cy for distorted
-K_final[1, 2] -= y  
-
-focal_final = (K_final[0, 0] + K_final[1, 1]) / 2.0
 
 
 # undistort and crop
-images_undistorted_cropped = []
+# --- UNDISTORTION (PRESERVING 100% OF PIXELS) ---
+
+# alpha=1 ensures ALL original pixels are retained. 
+# It adds black pixels at the corners instead of cutting off the image.
+new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(
+    intrinsic_mtx, dist, (w, h), alpha=1, newImgSize=(w, h)
+)
+
+# We do NOT use the ROI to crop. We want the full image.
+images_undistorted = []
+
+print("Undistorting images...")
 for img in images:
+    # This function uses the new matrix to remap the pixels correctly
     undistorted_img = cv2.undistort(img, intrinsic_mtx, dist, None, new_camera_matrix)
     
-    cropped_img = undistorted_img[y:y+h_roi, x:x+w_roi]
-    
-    images_undistorted_cropped.append(cropped_img)
+    # NO CROPPING HERE. Just append the full result.
+    images_undistorted.append(undistorted_img)
 
-images = np.array(images_undistorted_cropped)
+images = np.array(images_undistorted)
+
+# IMPORTANT: Your K matrix has changed because the image center shifted.
+# Use the new matrix for your NeRF training.
+K_final = new_camera_matrix
 
 n_total = len(images)
 
@@ -134,7 +137,7 @@ np.savez(
     images_val=images_val,
     c2ws_val=c2ws_val,
     c2ws_test=c2ws_test,
-    focal=focal_final # extract the focal length from the intrinsic matrix fx + fy / 2
+    K_matrix=K_final # extract the focal length from the intrinsic matrix fx + fy / 2
 )
 
     

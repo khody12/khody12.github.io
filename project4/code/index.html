@@ -255,8 +255,10 @@
 
             <section class="text-block">
                 <h2>Training the NeRF on the Lego Dataset</h2>
-                <p>We can take a look at how the model will train on the lego dataset here from 0 to 1900 iterations.</p>
+                <p>We can take a look at how the model will train on the classic lego dataset here from 0 to 1900 iterations.</p>
                 <p>It starts off as a fuzzy mess but slowly starts to sharpen up and by iteration 1900 or so begins to look pretty reasonable.</p>
+                <p>Additionally, I render a depth map of the lego dataset by passing in distances rather than colors to the volume rendering function. To remove random white noise, I use an accumulation mask. For a white pixel to render, it must have a certain level of confidence that it actually went through solid mass. This probability is represented by the weights, and the sum of the weights gives us the total probability that the ray passed through mass.</p>
+                <p>This prevents the renderer from finding one point where the model thinks density is high and then rendering that. These specks are often just random noise so having an accumulation tracker to see what the probability is of a ray hitting true mass is critical</p>
             </section>
 
             <div class="gallery-grid grid-3">
@@ -277,8 +279,15 @@
             <div class="gallery-grid grid-2">
                 <div class="gallery-item">
                     <img src="./lego_results/lego_gif.gif" alt="Lego GIF">
-                    <div class="caption">Final Rendered GIF</div>
+                    <div class="caption">Final Color Rendered GIF</div>
                 </div>
+                <div class="gallery-item">
+                    <img src="./lego_depth/my_nerf_render.gif" alt="Lego GIF">
+                    <div class="caption">Final Depth Rendered GIF</div>
+                </div>
+                
+            </div>
+            <div class="gallery-grid">
                 <div class="gallery-item">
                     <img src="./lego_results/lego_psnr_val.png" alt="PSNR Curve">
                     <div class="caption">Validation PSNR Curve</div>
@@ -311,8 +320,6 @@
                 <p>Next, scenes that have a variety of different colors are important for debugging. I, in error, thought that trying a scene like a carpet with a very constant color and then an object on top of it would make the training process more smooth but I found that the model could find lots more local minimas where it just memorizes the average color within 100 iterations and gets quite high PSNR values (20+).</p>
                 <p>In the end, I decided on a smaller arc shape instead of a 360 dome and I increased training images from ~35 to ~70. This caused drastically increased performance despite PSNR values not being terribly high at around ~17 when trained for 5000 iterations.</p>
                 <p>With that said, in this approach, my validation PSNR value was quite close to my training PSNR. Most of the error came from a part of the image seeing far into the background while most of the image was focused on the desk.</p>
-                
-                
             </section>
 
             <div class="gallery-grid grid-2">

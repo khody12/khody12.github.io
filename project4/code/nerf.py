@@ -29,7 +29,7 @@ def set_seed(seed):
 set_seed(180)
 
 device = "mps" # change if you are going to run this on colab like i did
-data = np.load(f"./data/my_data.npz")
+data = np.load(f"./data/lego_200x200.npz")
 h, w = data["images_train"].shape[1:3]
 
 torch.manual_seed(180)
@@ -52,15 +52,15 @@ c2ws_val = torch.tensor(data["c2ws_val"],  device=device, dtype=torch.float32)
 c2ws_test = torch.tensor(data["c2ws_test"], device=device, dtype=torch.float32)
 
 # Camera focal length
-#focal = torch.tensor(data["focal"], device=device, dtype=torch.float32)  # float
+focal = torch.tensor(data["focal"], device=device, dtype=torch.float32)  # float
  
-# K = torch.tensor([
-#     [focal, 0, w / 2.0],
-#     [0, focal, h / 2.0],
-#     [0, 0, 1]
-# ], device=device, dtype=torch.float32)
+K = torch.tensor([
+    [focal, 0, w / 2.0],
+    [0, focal, h / 2.0],
+    [0, 0, 1]
+], device=device, dtype=torch.float32)
 
-K = torch.tensor(data["K_matrix"], device=device, dtype=torch.float32)
+# K = torch.tensor(data["K_matrix"], device=device, dtype=torch.float32) for my personal data
 
 K_inv = torch.linalg.inv(K)
 
@@ -177,54 +177,54 @@ import viser, time  # pip install viser
 
 H, W = images_train.shape[1:3]
 
-server = viser.ViserServer(share=True)
+# server = viser.ViserServer(share=True)
 
-combined_train = torch.cat([images_train, images_val], dim=0)
-combined_c2ws = torch.cat([c2ws_train, c2ws_val],dim=0)
-dataset = DataLoader(combined_train, K, combined_c2ws)
-print(len(images_train))
+# combined_train = torch.cat([images_train, images_val], dim=0)
+# combined_c2ws = torch.cat([c2ws_train, c2ws_val],dim=0)
+# dataset = DataLoader(combined_train, K, combined_c2ws)
+# print(len(images_train))
 
-rays_o, rays_d, pixels = dataset.sample_rays(100)
+# rays_o, rays_d, pixels = dataset.sample_rays(100)
 
-points = sample_along_rays(rays_o, rays_d, perturb=True)
+# points = sample_along_rays(rays_o, rays_d, perturb=True)
 
-for i, (image, c2w) in enumerate(zip(combined_train, combined_c2ws)):
+# for i, (image, c2w) in enumerate(zip(combined_train, combined_c2ws)):
   
-  image_np = image.detach().cpu().numpy()
-  c2w_np = c2w.detach().cpu().numpy()
-  K_focal_np = K[0, 0].detach().cpu().numpy() 
+#   image_np = image.detach().cpu().numpy()
+#   c2w_np = c2w.detach().cpu().numpy()
+#   K_focal_np = K[0, 0].detach().cpu().numpy() 
   
-  server.scene.add_camera_frustum(
-    f"/cameras/{i}",
-    fov=2 * np.arctan2(H / 2, K_focal_np), 
-    aspect=W / H,
-    scale=0.2, # need to adjust if you're using my data or lego data. my data is too tight on scale =0.15
-    wxyz=viser.transforms.SO3.from_matrix(c2w_np[:3, :3]).wxyz,
-    position=c2w_np[:3, 3],
-    image=image_np
-  )
-  rays_o, rays_d, pixels = dataset.sample_rays(0)
-  points = sample_along_rays(rays_o, rays_d, perturb=True)
-  ray_data = {"rays_o": rays_o, "rays_d": rays_d}
+#   server.scene.add_camera_frustum(
+#     f"/cameras/{i}",
+#     fov=2 * np.arctan2(H / 2, K_focal_np), 
+#     aspect=W / H,
+#     scale=0.2, # need to adjust if you're using my data or lego data. my data is too tight on scale =0.15
+#     wxyz=viser.transforms.SO3.from_matrix(c2w_np[:3, :3]).wxyz,
+#     position=c2w_np[:3, 3],
+#     image=image_np
+#   )
+#   rays_o, rays_d, pixels = dataset.sample_rays(0)
+#   points = sample_along_rays(rays_o, rays_d, perturb=True)
+#   ray_data = {"rays_o": rays_o, "rays_d": rays_d}
 
-  for i, (o, d) in enumerate(zip(ray_data["rays_o"], ray_data["rays_d"])):
-    o_np = o.detach().cpu().numpy()
-    d_np = d.detach().cpu().numpy()
+#   for i, (o, d) in enumerate(zip(ray_data["rays_o"], ray_data["rays_d"])):
+#     o_np = o.detach().cpu().numpy()
+#     d_np = d.detach().cpu().numpy()
 
-    positions = np.stack((o_np, o_np + d_np * 6.0))
-    server.add_spline_catmull_rom(
-        f"/rays/{i}", positions=positions,
-    )
-    points_np = points.detach().cpu().numpy() 
+#     positions = np.stack((o_np, o_np + d_np * 6.0))
+#     server.add_spline_catmull_rom(
+#         f"/rays/{i}", positions=positions,
+#     )
+#     points_np = points.detach().cpu().numpy() 
 
-    server.add_point_cloud(
-        f"/samples",
-        colors=np.zeros_like(points_np).reshape(-1, 3), 
-        points=points_np.reshape(-1, 3),
-        point_size=0.03,
-    )
-while True:
-    time.sleep(0.1)
+#     server.add_point_cloud(
+#         f"/samples",
+#         colors=np.zeros_like(points_np).reshape(-1, 3), 
+#         points=points_np.reshape(-1, 3),
+#         point_size=0.03,
+#     )
+# while True:
+#     time.sleep(0.1)
     
 
 def positional_encoding(coords, positional_frequency):
@@ -301,9 +301,11 @@ class NeRF(nn.Module):
 
 
 def volrend(sigmas, rgbs, step_size):
-    deltas = torch.full_like(sigmas, step_size)
+    deltas = torch.full_like(sigmas, step_size) # a bunch of step_size in the shape of sigmas
+    # intuition is that each density point needs a small segment to sample the probability of a ray terminating there
+    # we can't do one point because it'll be essentially zero, we need a little distance. probability it terminates in this distance 0.01-0.03
     
-    alphas = 1.0 - torch.exp(-sigmas * deltas)
+    alphas = 1.0 - torch.exp(-sigmas * deltas) # multiplying them together, density * that tiny region we're saying has that particular density
     
     # transmittances
     one_minus_alphas = 1.0 - alphas
@@ -325,6 +327,38 @@ def volrend(sigmas, rgbs, step_size):
     
     return final_color
 
+def volrend_depth(sigmas, step_size, near, far, n_samples_render):
+    deltas = torch.full_like(sigmas, step_size)
+    
+    alphas = 1.0 - torch.exp(-sigmas * deltas)
+
+    t = torch.linspace(near, far, n_samples_render, device=device)
+    distances = t.unsqueeze(0).repeat(sigmas.shape[0], 1)
+    
+    # transmittances
+    one_minus_alphas = 1.0 - alphas
+
+    # pad with a 1 so that cumprod works
+    T_pad = torch.ones_like(one_minus_alphas[:, :1]) 
+    T_unrolled = torch.cat([T_pad, one_minus_alphas], dim=1) 
+    
+    T_cumprod = torch.cumprod(T_unrolled, dim=1)
+    
+    # slice last useless elem
+    T = T_cumprod[:, :-1] # [N_rays, N_samples, 1]
+
+    # final weights/colors
+    weights = T * alphas 
+    weights = weights.squeeze(2)
+    
+    # final colors C is weights times the colors
+    final_depth = torch.sum(weights * distances, dim=1) # [N_rays]
+
+    accumulation = torch.sum(weights, dim=1)
+    
+    return final_depth, accumulation
+
+
 step_size = (6.0 - 2.0) / 64
 
 steps = 10000
@@ -335,7 +369,7 @@ model = NeRF().to(device)
 loss_fn = torch.nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
 
-def render_full_image(model, K, c2w, h, w, n_samples_render=64, batch_size=10000):
+def render_full_image(model, K, c2w, h, w, n_samples_render=64, batch_size=10000, depth=False):
     model.eval()
     
     near, far = 2.0, 6.0
@@ -348,6 +382,7 @@ def render_full_image(model, K, c2w, h, w, n_samples_render=64, batch_size=10000
     uv = torch.stack([u.reshape(-1), v.reshape(-1)], dim=-1)
 
     all_pixels = []
+    all_acc = []
 
     with torch.no_grad():  
         for i in range(0, h * w, batch_size): # batched to prevent mem explosion
@@ -367,14 +402,20 @@ def render_full_image(model, K, c2w, h, w, n_samples_render=64, batch_size=10000
             encoded_rd = positional_encoding(r_d_expanded, 4)
             sigmas, colors = model(encoded_points, encoded_rd)
 
-            predicted_pixels = volrend(sigmas, colors, step_size)
+            if depth:
+                predicted_pixels, acc = volrend_depth(sigmas, step_size, near, far, n_samples_render)
+                all_acc.append(acc)
+            else:
+                predicted_pixels = volrend(sigmas, colors, step_size)
             
             all_pixels.append(predicted_pixels)
 
     
     model.train()
-    
-    return torch.cat(all_pixels, dim=0).reshape(h, w, 3)
+    if depth:
+        return torch.cat(all_pixels, dim=0).reshape(h, w), torch.cat(all_acc, dim=0).reshape(h, w)
+    else:
+        return torch.cat(all_pixels, dim=0).reshape(h, w, 3)
 
 # to create lego gif
 # def final_test_renders(model, test_dataset):
@@ -401,66 +442,66 @@ val_step_list = []
 val_psnr_list = []
 PSNR_list = []
 import cv2
-for step in range(2000):
-    rays_o, rays_d, pixels = train_dataset.sample_rays(batch_size)
+# for step in range(2000):
+#     rays_o, rays_d, pixels = train_dataset.sample_rays(batch_size)
 
-    points = sample_along_rays(rays_o, rays_d, perturb=True)
-    # print("points shape ", points.shape)
-    # rays_o, rays_d, points, img_idx, rows, cols = sample_along_rays(batch_size, K, c2ws_train, h, w) # points is the data we need here
-    # print("c2ws training ", c2ws_train[0:5])
-    # print("rays_o", rays_o[0:5], "rays_d ", rays_d[0:5], "points ", points[0:5])
+#     points = sample_along_rays(rays_o, rays_d, perturb=True) # distances unnecessary unless doing depth visualization
+#     # print("points shape ", points.shape)
+#     # rays_o, rays_d, points, img_idx, rows, cols = sample_along_rays(batch_size, K, c2ws_train, h, w) # points is the data we need here
+#     # print("c2ws training ", c2ws_train[0:5])
+#     # print("rays_o", rays_o[0:5], "rays_d ", rays_d[0:5], "points ", points[0:5])
 
-    H, W = images_train.shape[1:3]
+#     H, W = images_train.shape[1:3]
 
-    # true_colors = images_train[img_idx, rows.long(), cols.long()]
+#     # true_colors = images_train[img_idx, rows.long(), cols.long()]
 
-    encoded_points = positional_encoding(points, 10)
-    # print("ray_d shape ", rays_d.shape)
-    encoded_rays_d = positional_encoding(rays_d, 4).unsqueeze(1).repeat(1, 64,1) # 64 points on the ray get the same direction vector
+#     encoded_points = positional_encoding(points, 10)
+#     # print("ray_d shape ", rays_d.shape)
+#     encoded_rays_d = positional_encoding(rays_d, 4).unsqueeze(1).repeat(1, 64,1) # 64 points on the ray get the same direction vector
 
-    optimizer.zero_grad()
+#     optimizer.zero_grad()
 
-    sigmas, colors = model(encoded_points, encoded_rays_d)
+#     sigmas, colors = model(encoded_points, encoded_rays_d)
 
-    predicted_colors = volrend(sigmas, colors, step_size)
+#     predicted_colors = volrend(sigmas, colors, step_size)
 
 
-    loss = loss_fn(predicted_colors, pixels)
-    loss.backward()
-    optimizer.step()
+#     loss = loss_fn(predicted_colors, pixels)
+#     loss.backward()
+#     optimizer.step()
 
-    PSNR = 10 * torch.log10(1 / loss)
-    PSNR_list.append(PSNR.detach().cpu().numpy())
+#     PSNR = 10 * torch.log10(1 / loss)
+#     PSNR_list.append(PSNR.detach().cpu().numpy())
     
 
-    if step % 10 == 0:
-        print("loss ", loss, " PSNR ", PSNR)
+#     if step % 10 == 0:
+#         print("loss ", loss, " PSNR ", PSNR)
     
     
-    if step % 10 == 0:
-        model.eval()
-        with torch.no_grad(): # test on one image 
-            im = render_full_image(model, K, c2ws_val[0], h, w, 64, 10000)
+#     if step % 10 == 0:
+#         model.eval()
+#         with torch.no_grad(): # test on one image 
+#             im = render_full_image(model, K, c2ws_val[0], h, w, 64, 10000, False)
             
-            gt_image = images_val[0]
+#             gt_image = images_val[0]
             
-            val_loss = loss_fn(im, gt_image)
+#             val_loss = loss_fn(im, gt_image)
             
-            val_psnr = 10 * torch.log10(1 / val_loss)
-            val_psnr_list.append(val_psnr.detach().cpu().numpy())
-            val_step_list.append(step)
+#             val_psnr = 10 * torch.log10(1 / val_loss)
+#             val_psnr_list.append(val_psnr.detach().cpu().numpy())
+#             val_step_list.append(step)
 
-            print(f"step {step}")
-            print(f"val Loss {val_loss.item():.6f}")
-            print(f"val PSNR {val_psnr.item():.4f}")
+#             print(f"step {step}")
+#             print(f"val Loss {val_loss.item():.6f}")
+#             print(f"val PSNR {val_psnr.item():.4f}")
             
-        model.train()
+#         model.train()
 
-plt.plot(val_step_list, val_psnr_list)
-plt.title("PSNR validation Curve for lego image")
-plt.xlabel("Epoch")
-plt.ylabel("PSNR value")
-plt.show()
+# plt.plot(val_step_list, val_psnr_list)
+# plt.title("PSNR validation Curve for lego image")
+# plt.xlabel("Epoch")
+# plt.ylabel("PSNR value")
+# plt.show()
 
 # plt.plot(range(0, 3000), PSNR_list)
 # plt.title("PSNR Training Curve for Personal Image")
@@ -470,13 +511,13 @@ plt.show()
 
 # testing
 model = NeRF().to(device)
-model.load_state_dict(torch.load("weights/my_model.pth"))
+model.load_state_dict(torch.load("weights/lego_model.pth", map_location=device))
 model.eval()
 
 
 def look_at_origin(pos):  # cam towards orig
     forward = -pos / np.linalg.norm(pos)  # normalize
-    up_world = np.array([0, 1, 0])
+    up_world = np.array([0, 0, -1])
     
     # compute right vec
     right = np.cross(forward, up_world) 
@@ -497,26 +538,41 @@ model.eval()
 start_pos = c2ws_train[0, :3, 3].cpu().numpy()
 frames = []
 
+near = 2
+far = 6
+depth = True
+
+avg_radius = torch.mean(distances).item()
+print(f"Training Camera Radius: {avg_radius:.2f}")
+
 with torch.no_grad():
     for phi in tqdm(np.linspace(0., 360., 60, endpoint=False)):
         
         # new cam pos
         phi_rad = phi / 180. * np.pi
         
-        pos = np.array([0.25 * math.cos(phi_rad), 0.0, 0.25 * math.sin(phi_rad)])
+        pos = np.array([avg_radius * math.cos(phi_rad), avg_radius * math.sin(phi_rad), 2])
         
         c2w_np = look_at_origin(pos)
         
         c2w_tensor = torch.tensor(c2w_np, dtype=torch.float32).to(device)
-        img_tensor = render_full_image(model, K, c2w_tensor, h, w, n_samples_render=64, batch_size=10000
-        )
+        img_tensor, acc_tensor = render_full_image(model, K, c2w_tensor, h, w, n_samples_render=64, batch_size=10000, depth=True)
         
         frame_np = img_tensor.detach().cpu().numpy()
-        frame = (frame_np * 255).astype(np.uint8)
+        acc_np = acc_tensor.detach().cpu().numpy()
+        
+        if depth: # because we sigmoid colors, we don't need this, but distances can go above 1
+            frame_normalized = (frame_np - near) / (far - near)
+            frame_normalized = np.clip(frame_normalized, 0.0, 1.0)
+            frame = ((1 - frame_normalized) * 255).astype(np.uint8)
+            background_mask = acc_np < 0.5
+            frame[background_mask] = 0.0
+        else:
+            frame = (frame_np * 255).astype(np.uint8)
         
         frames.append(frame)
 
-imageio.mimsave("my_nerf_render.gif", frames, fps=10, loop=0)
+imageio.mimsave("./lego_depth/my_nerf_render.gif", frames, fps=10, loop=0)
 
 
 

@@ -160,6 +160,30 @@
                 </div>
             </div>
 
+            <section class="text-block">
+                <h2>Orientation of Gradients</h2>
+                <p>
+                    We can also visualize what orientation a gradient is facing by taking the tangent of gradient in the y direction and the gradient in the x direction.   
+                </p>
+                <p>
+                    In order to remove some background noise, I only use derivative values of x and y that are greater than a certain threshold value.
+                </p>
+                <p>
+                    I first visualize the gradients with gray, and then I use an HSV colormap. Red represents an angle of 0/360. So, the angle will gradually cycle back to red as we increase it.
+                </p>
+            </section>
+
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./results/angle_cameraman.png" alt="Original Taj">
+                    <div class="caption">Angle Orientations</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./results/hsv_angle_cameraman.png" alt="Details Taj">
+                    <div class="caption">HSV-mapped Angle Orientations</div>
+                </div>
+            </div>
+
             <hr>
 
             <section class="text-block">

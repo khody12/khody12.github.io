@@ -5,6 +5,7 @@ import skimage.io as skio
 import matplotlib.pyplot as plt
 import cv2
 import scipy.signal
+import matplotlib
 
 def read_and_resize(image_path):
     im = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
@@ -101,7 +102,7 @@ def compare_convolutions():
     #saveable_scipy_convolved_khody = cv2.normalize(convolved_khody, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
     # cv2.imwrite("scipy_convolved_khody.png", saveable_scipy_convolved_khody) saving image
 
-compare_convolutions()
+# compare_convolutions()
 
 # Finite difference operators
 
@@ -143,7 +144,7 @@ def camera_man():
     saveable_binarize = cv2.normalize(binarize_im, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
     cv2.imwrite("./results/binarized_cameraman.png", saveable_binarize)
 
-camera_man()
+# camera_man()
 
 def gaussian_cameraman():
     im = cv2.imread("./images/cameraman.png", cv2.IMREAD_GRAYSCALE)
@@ -188,7 +189,7 @@ def gaussian_cameraman():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     cv2.imwrite("./results/gaussian_binarized_cameraman.jpg", normalized_binarize_im)
-gaussian_cameraman()
+# gaussian_cameraman()
 
 def DoG_filter():
     im = cv2.imread("./images/cameraman.png", cv2.IMREAD_GRAYSCALE)
@@ -225,10 +226,49 @@ def DoG_filter():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+def cyclic_colormap():
+    im = cv2.imread("./images/cameraman.png", cv2.IMREAD_GRAYSCALE)
+    d1_gaussian = cv2.getGaussianKernel(ksize=9, sigma=5)
+    d2_gaussian = np.outer(d1_gaussian, np.transpose(d1_gaussian))
+
+    Gx = convolution(d2_gaussian, Dx)
+    Gy = convolution(d2_gaussian, Dy)
+    grad_x = convolution(im, Gx)
+    grad_y = convolution(im, Gy)
+
+    grad_x = np.where(np.abs(grad_x) > 10, grad_x, 0)
+    grad_y = np.where(np.abs(grad_y) > 10, grad_y, 0)
+
+    angle = np.arctan2(grad_y, grad_x)
+    angle = np.mod(angle, 2 * np.pi)
+    display_angle = (angle / (2 * np.pi) * 255).astype(np.uint8)
+    
+    print(display_angle)
+    cv2.imshow("f", display_angle)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    
+
+    plt.imshow(angle, cmap='hsv', vmin=0, vmax=2*np.pi)
+    plt.show()
+
+
+cyclic_colormap()
+
+    
 
 
 
-DoG_filter()
+
+
+
+
+
+
+
+
+
+# DoG_filter()
 
 
 

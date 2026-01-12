@@ -398,13 +398,18 @@
 
             <section class="text-block">
                 <h2>Playing With Color and Frequencies</h2>
-                <p>I'll now experiment with using color and frequencies. In this image, I make 'The Kiss' in RGB and keep 'The Lovers' in gray. We can see that adding color the low frequencies makes it quite visible and improves the look of the hybrid image.</p>
+                <p>I'll now experiment with using color and frequencies. In this image, I make 'The Kiss' in RGB and keep 'The Lovers' in gray. We can see that passing color through a low pass filter keeps the colors consistent and the image looks quite nice.</p>
+                <p>If we try passing color through the high pass filter however, the color balance is significantly distorted.</p>
             </section>
 
-            <div class="gallery-grid grid-1">
+            <div class="gallery-grid grid-2">
                 <div class="gallery-item">
                     <img src="./results/rgb_hybrid_lovers_thekiss.png" alt="Hybrid Art">
-                    <div class="caption">Hybrid Result</div>
+                    <div class="caption">Low Pass RGB Result</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./results/rgb_hybrid_lovers_thekiss2.png" alt="Hybrid Art">
+                    <div class="caption">High pass RGB Result</div>
                 </div>
             </div>
 

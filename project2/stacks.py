@@ -117,6 +117,7 @@ LS = []
 num = 0
 Apple_stack = []
 Orange_stack = []
+
 for la_level, lb_level, gr_level in zip(LA, LB, GR):
     
     # apple image weighed

@@ -45,15 +45,14 @@ def low_pass(image, sigma, color):
         low_pass_image = np.stack([b, g, r], axis=2)
         normalized_low_pass_image = cv2.normalize(low_pass_image, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8U)
 
-
     else:
         low_pass_image = scipy.signal.convolve2d(im_float, d2_gaussian, mode='same')
         normalized_low_pass_image = cv2.normalize(low_pass_image, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8U)
 
 
-    plt.imshow(np.log(np.abs(np.fft.fftshift(np.fft.fft2(low_pass_image)))))
-    plt.title("Fourier Transform with a low pass filter applied")
-    plt.show()
+    # plt.imshow(np.log(np.abs(np.fft.fftshift(np.fft.fft2(low_pass_image)))))
+    # plt.title("Fourier Transform with a low pass filter applied")
+    # plt.show()
 
     cv2.imshow("Low_pass", normalized_low_pass_image)
     cv2.waitKey(0)
@@ -67,9 +66,9 @@ def high_pass(image, sigma, color):
     high_pass_image = image.astype(np.float32) - gaussian_filtered
     normalized_high_pass_image = cv2.normalize(high_pass_image, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8U)
 
-    plt.imshow(np.log(np.abs(np.fft.fftshift(np.fft.fft2(high_pass_image)))))
-    plt.title("Fourier Transform with a high pass filter applied")
-    plt.show()
+    # plt.imshow(np.log(np.abs(np.fft.fftshift(np.fft.fft2(high_pass_image)))))
+    # plt.title("Fourier Transform with a high pass filter applied")
+    # plt.show()
 
 
     cv2.imshow("high pass", normalized_high_pass_image)
@@ -81,11 +80,16 @@ def high_pass(image, sigma, color):
 # low_pass_image = low_pass(cv2.cvtColor(im1_aligned.astype(np.float32), cv2.COLOR_RGB2GRAY), 6) 
 # high_pass_image = high_pass(cv2.cvtColor(im2_aligned.astype(np.float32), cv2.COLOR_RGB2GRAY), 6) 
 
-low_pass_image = low_pass(im1_aligned.astype(np.float32), 6, True)
-high_pass_image = high_pass(cv2.cvtColor(im2_aligned.astype(np.float32), cv2.COLOR_RGB2GRAY), 6, False)
+# low pass image has color
+# low_pass_image = low_pass(im1_aligned.astype(np.float32), 6, True)
+# high_pass_image = high_pass(cv2.cvtColor(im2_aligned.astype(np.float32), cv2.COLOR_RGB2GRAY), 6, False)
+
+low_pass_image = low_pass(cv2.cvtColor(im1_aligned.astype(np.float32), cv2.COLOR_RGB2GRAY), 6, False)
+high_pass_image = high_pass(im2_aligned.astype(np.float32), 6, True)
 
 
-hybrid = low_pass_image + high_pass_image[:, :, np.newaxis]
+# hybrid = low_pass_image + high_pass_image[:, :, np.newaxis]
+hybrid = low_pass_image[:, :, np.newaxis] + high_pass_image
 hybrid_normalized = cv2.normalize(hybrid, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8U)
 
 plt.imshow(np.log(np.abs(np.fft.fftshift(np.fft.fft2(hybrid)))))

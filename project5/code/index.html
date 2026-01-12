@@ -555,6 +555,30 @@
                 </p>
             </div>
 
+            <div class="gallery-grid grid-1">
+                <div class="gallery-item">
+                    <img src="../5b_results/2.2_training.png" alt="Loss Curve">
+                    <div class="caption">Loss Curve</div>
+                </div>
+            </div>
+
+            <section class="text-block">
+                <h3>Improving Our Time Conditioning Model</h3>
+                <p>Before we move onto adding class conditioning to our UNet, we can attempt to make the architecture more expressive and more capable of representing digits.</p>
+                <p>At the moment, loss is calculated by choosing some digit, and then making a digit out of random noise. We don't actually successfully train the model to be able to create a specific digit, just any digit at all.</p>
+                <p>To improve this model, I made several changes to increase expressivity. First, I removed the global pooling at the bottom of the architecture - The idea being that it likely averages out too many important details. I replace this with a convolutional block and an attention layer. Attention is expensive, but since we use it when the data is smallest, the training time is not significantly increased.</p>
+                <p>Additionally, I use residual connections (ResNets) throughout the model and I add sinusoidal embeddings for the time-conditioning. Instead of a scalar, we'll have a vector which should let the model learn better between soemthing like t = 0.4 and t = 0.41 which look essentially identical to a model without embeddings.</p>
+                <p>Lastly I decrease the learning rate to 0.001 and run for 15 epochs.</p>
+            </section>
+
+            <div class="gallery-grid grid-1">
+                <div class="gallery-item">
+                    <img src="../5b_results/improved_time_condition_epoch15.png" alt="Loss Curve">
+                    <div class="caption">Epoch 15</div>
+                </div>
+            </div>
+            
+
             <section class="text-block">
                 <h3>Adding Class-Conditioning to UNet</h3>
                 <p>

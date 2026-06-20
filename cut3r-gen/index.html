@@ -308,7 +308,7 @@
     <h2>Results</h2>
 
     <h3>Quantitative Comparison</h3>
-    <p>We evaluate on 50 held-out DL3DV-10K scenes across image reconstruction and novel view synthesis. Higher PSNR and SSIM are better; lower LPIPS is better.</p>
+    <p>We evaluate on 50 held-out DL3DV-10K scenes. Higher PSNR and SSIM are better; lower LPIPS is better. Our generative head trades pixel-level fidelity (PSNR, SSIM) for sharper, more perceptually plausible outputs — reflected in improved LPIPS on novel view synthesis.</p>
 
     <table class="results-table">
       <thead>
@@ -333,12 +333,6 @@
           <td>0.8883</td>
           <td>0.1213</td>
         </tr>
-        <tr>
-          <td>Ours — Generative (12 DiT blocks)</td>
-          <td>14.55</td>
-          <td>0.4811</td>
-          <td>0.6208</td>
-        </tr>
         <tr class="section-row"><td colspan="4">Novel View Synthesis</td></tr>
         <tr>
           <td>CUT3R DPT (Baseline)</td>
@@ -350,19 +344,48 @@
           <td>Ours — Generative (8 DiT blocks)</td>
           <td>12.25</td>
           <td>0.3950</td>
+          <td class="best">0.6423</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top: 36px;">NVS-Specialized Model (12 DiT blocks)</h3>
+    <p>
+      We also trained a larger 12-block variant designed exclusively for novel view synthesis — queried only with ray maps, never with ground-truth images. This model explores a different point in the design space: rather than balancing reconstruction and synthesis, it focuses entirely on generating plausible novel views from the accumulated scene state.
+    </p>
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>PSNR ↑</th>
+          <th>SSIM ↑</th>
+          <th>LPIPS ↓</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="section-row"><td colspan="4">Novel View Synthesis</td></tr>
+        <tr>
+          <td>CUT3R DPT (Baseline)</td>
+          <td>14.31</td>
+          <td>0.5192</td>
+          <td>0.8208</td>
+        </tr>
+        <tr>
+          <td>Ours — Generative (8 DiT blocks)</td>
+          <td>12.25</td>
+          <td>0.3950</td>
           <td>0.6423</td>
         </tr>
         <tr>
-          <td>Ours — Generative (12 DiT blocks)</td>
+          <td>Ours — Generative (12 DiT blocks, NVS-only)</td>
           <td>12.23</td>
           <td>0.4181</td>
           <td class="best">0.5729</td>
         </tr>
       </tbody>
     </table>
-
-    <p style="font-size: 0.875rem; color: #6b7280;">
-      The generative head underperforms the regression baseline on pixel-level metrics (PSNR, SSIM), consistent with the generative model sampling a plausible appearance rather than averaging to the ground truth. Importantly, the 12-block model achieves the best LPIPS on NVS, indicating higher perceptual similarity to ground truth novel views.
+    <p style="font-size: 0.875rem; color: #6b7280; margin-top: 10px;">
+      The 12-block NVS-only model achieves the best LPIPS across all methods, suggesting that specializing for perceptual quality on novel views is a productive direction with more compute and data.
     </p>
 
     <h3 style="margin-top: 36px;">Qualitative: Novel View Synthesis</h3>

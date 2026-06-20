@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 2: Filters and Frequencies</title>
+    
+    <!-- Link to your external CSS stylesheet -->
+    <link rel="stylesheet" href="../css/project_2.css">
+
+    <!-- Link to Google Fonts (Playfair Display for headings, Source Serif Pro for body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- A main container to center the content on the page -->
+    <div class="container">
+        <!-- Header Section -->
+        <header class="page-header">
+            <h1>Filters and Frequencies</h1>
+            <nav>
+                <a href="../index.html" class="home-button">Home</a>
+            </nav>
+        </header>
+
+        <!-- Main Content Section -->
+        <main class="main-content">
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Intro</h1>
+                    <p>In this project, I'm going to explore the power of manipulating the frequencies of an image to do blurring, sharpening, hybridization, and blending. 
+                        We'll see how frequencies can be used for edge detection and how increasing the influence of edges can lead to a sharper image.</p>
+                </div>
+                <div class="image-gallery">
+                    <div class="image-wrapper-col">
+                        <img src="./results/binarized_cameraman.png" alt="binarized edge detected cameraman">
+                    </div>
+        
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Convolution</h1>
+                    <p>The heart of working with filters is convolution.</p> 
+                    <p>Convolution is the process of overlaying a kernel (matrix) over another matrix and multiplying the corresponding overlaid values together. 
+                        Then adding the sum of all these multiplications together, and setting the pixel of the resultant matrix to that sum. Once you overlay the kernel over each pixel of the original image, and get all the sums, you now have the result of convolution.
+                    </p>
+                    <p>Here is an implementation of convolution in Python with a slower, per pixel approach, and a vectorized Numpy approach.
+                    </p>
+                    <p>The four loop approach operates on each pixel, this is a very intuitive approach to the process but it ends up taking a long time, especially for large pictures or kernels. 
+                        The vectorized NumPy approach operates on an entire vector at once. 
+                    </p>
+                    <p>Boundaries where a kernel would need to access parts of the image that don't exist are handled by padding the image with zeros on the border. It is padded by (height - 1) / 2 and (width - 1) / 2 on the top/bottom and the left/right respectively. Where height and width are the height and width of the kernel.</p>
+                </div>
+
+                <div class="image-column">
+                    <div class="image-gallery">
+                        <div class="image-wrapper-col">
+                            <img src="./results/four_loop_convolution.png">
+                        </div>
+                        <div class="image-wrapper-col">
+                            <img src="./results/two_loop_convolution.png">
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Utilizing Convolution for Edge Detection</h1>
+                    <p>Here we utilize convolution to blur this image of a camera man to reduce some noisy high frequencies and find the important edges.</p>
+                    <p>We use the differential operators X [1, 0, -1], and Y [[1], [0], [-1]] to measure where there are large differences in the intensity of the pixels in the X and Y direction. This essentially operators similar to a derivative and where changes are rapid and significant, the value will be higher in the resultant convolution.</p>
+                    <p>For the images on the right, the change in X is on top, and the change in Y is on the bottom.</p>
+                </div>
+
+                <div class="image-column">
+                    <div class="image-gallery">
+                        <div class="image-wrapper-col">
+                            <img src="./results/dx_cameraman.png">
+                        </div>
+                        <div class="image-wrapper-col">
+                            <img src="./results/dy_cameraman.png">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Creating a Binarized Image</h1>
+                    <p>In order to make a clear edge image, we can take the magnitude of the X and Y edges and then binarize the image. We force the pixels to be either 0 or 1 depending on their intensity. This removes noise and ensures that our edge map captures only the important edges.</p>
+                    <p>I made the trade off of decreasing the necessary brightness to display an edge in order to make sure the camera man is clearly outlined. 
+                        However, this has the side effect of bleeding some of the sharpest bits of background into the edge map. If, instead, you want less noise from the background but potentially a less clear camera man. You can increase the threshold for how intense an edge needs to be to be included in the binarized image.</p>
+                </div>
+
+                <div class="image-column">
+                    <div class="image-gallery">
+                        <div class="image-wrapper-col">
+                            <img src="./results/binarized_cameraman.png">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Using a Gaussian Filter</h1>
+                    <p>The previous image had significant noise around the edges and the background had a noticeable amount of bleed in.</p>
+                    <p>A way to counter these high frequencies that bleed in is using a Gaussian filter to blur out some of the noise and make sure that only the steepest and important edges are included in the final image.</p>
+                    <p>First we blur the original image with a Gaussian filter. Then we proceed with using the differential operators, creating the magnitude image, and binarizing the magnitude image.</p>
+                    <p>The result is significantly more defined and larger edges. There are fewer holes on the edges of the camera man and it generally results in a cleaner edge image. With that said, there are some trade offs. 
+                        There is certainly some detail lost, specifically in the camera mans face. This can, of course, be adjusted by changing the threshold of displaying an edge, but it can result in more background bleed. Here I have tried to limit background bleed while capturing the largest and most prominent edges of the camera man.</p>
+                </div>
+
+                <div class="image-column">
+                    <div class="image-gallery">
+                        <div class="image-wrapper-col">
+                            <img src="./results/gaussian_binarized_cameraman.jpg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Derivative of Gaussian Filters</h1>
+                    <p>Previously, I created the filters by first convolving the image with a blur filter, then convolving the blurred image with the difference operators.</p>
+                    <p>However, because convolution is commutative, we can first take the convolution of the Dx and Dy filters with the Gaussian. This reduces computational load because we only do one convolution with the large image.</p>
+                    <p>We can see here the results are exactly the same, which is why convolution is so powerful. We are able to massively speed up operations because we don't need to use the full image against all the filters we want to use, we can just combine the filters first.</p>
+                </div>
+
+                <div class="image-column">
+                    <div class="image-gallery">
+                        <div class="image-wrapper-col">
+                            <img src="./results/DoG_X.jpg">
+                        </div>
+                        <div class="image-wrapper-col">
+                            <img src="./results/DoG_Y.jpg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Unsharp Mask Filter</h1>
+                    <p>We can use Gaussian smoothing to our advantage for more than just blurring. We can use it to sharpen an image by first creating a blurred image by convolving the original image with the Gaussian kernel and then subtracting the blurred image from our original image.</p>
+                    <p>This leaves us with just the high frequencies of the image. From here, we can add these high frequencies back to the original image to try to accentuate the edges.</p>
+                    <p>We can multiply this high frequency image by whatever sigma value we want. Perhaps 1.25 for some mild sharpening, or 3+ if we really want to see the edges.</p>
+                    
+                </div>
+
+                <div class="image-column">
+                    <div class="image-gallery-2">
+                        <div class="image-wrapper-col">
+                            <img src="./images/taj.jpg">
+                        </div>
+                        <div class="image-wrapper-col">
+                            <img src="./results/details_taj.jpg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Sharpened Taj Mahal</h1>
+                    <p>Here's the result of sharpening the Taj Mahal.</p>
+                    <p>Sharpening does not exactly recover detail that we didn't see before. Rather, it's taking the high frequencies, largely the edges of objects, and accentuating them.</p>
+                    <p>Looking at the left of the Taj, you can see these dark poles are significantly sharper. The thin engravings on the front are also significantly more visible.</p>
+                    <p>However the price of sharpening is that things look much less smooth and realistic. The bushes especially look strangely sharp. Dark spots are also darker than they were before. The image definitely has an overprocessed look to it. This technique is common among cheap smartphones that have lower quality sensors.</p>
+                    <p>We have 1.25x on the left, 2x sharpening on the right.</p>
+                </div>
+
+                <div class="image-column">
+                    <div class="image-gallery">
+                        <div class="image-wrapper-col">
+                            <img src="./results/1.25x_sharpened_taj.jpg">
+                        </div>
+                    </div>
+                    <div class="image-gallery">
+                        <div class="image-wrapper-col">
+                            <img src="./results/2x_sharpened_taj.jpg">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Sharpening a slightly blurry image</h1>
+                    <p>The Taj was mainly a small image so it looked somewhat grainy. How will sharpening perform on an image that is slightly blurry or is in low light?</p>
+                    <p>I tried to sharpen myself here on UC Berkeley's campus last year. The details are a bit dim, because it's dark outside, but if you turn up your brightness, you should be able to see the outlines of the leaves on the ground and the outline of my body.</p>
+                </div>
+                <div class="image-column">
+                    <div class="image-gallery-2">
+                        <div class="image-wrapper-row">
+                            <img src="./images/blurry_me.jpeg">
+                        </div>
+                        <div class="image-wrapper-row">
+                            <img src="./results/high_frequency_me.jpg">
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Sharpened me</h1>
+                    <p>The sharpening filter doesn't exactly unblur the image. You can still see some significant softness around my face.</p>
+                    <p>With that said, there is still some improvement around my eyes and my glasses. My hand, specifically the thumb, looks a bit sharper. Additionally, the leaves look significantly sharper and the grooves on the ground are more pronounced.</p>
+                    <p>Left is again 2x sharpening, right is 5x. You have to look really close here, but most of the difference is in the leaves and the ground.</p>
+                    <p>The right image is really extreme sharpening here, to the point where some noise starts to get introduced around the image. You can also start to see how the colors start to deteriorate and gray as we continue adding high frequency detail. With that said, my face does look sharper and the ground as well. </p>
+                    
+                </div>
+                <div class="image-column">
+                    <div class="image-gallery-2">
+                        <div class="image-wrapper-row">
+                            <img src="./results/2x_sharpened_me.jpg">
+                        </div>
+                        <div class="image-wrapper-row">
+                            <img src="./results/5x_sharpened_me.jpg">
+                        </div>
+                    </div>
+                </div>
+            
+            </div>
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Hybrid images</h1>
+                    <p>Now we're going to look at hybrid images. The idea here is that you can basically create two images in one by moving one image through a low pass filter and the other through a high pass filter.</p>
+                    <p>The low pass image will cut out those high frequencies. While the high pass image will cut out the low frequencies. The image that goes through the low pass filter will be more visible at distance because the image that is composed of mostly high frequencies will not be visible by humans anymore. Our eye will not be able to see those high frequencies at a certain length.</p>
+                    <p>Here's an example of a cat and a human.</p>
+                    <p>The cat was run through the low pass filter, preserving those low frequencies so it will be seen from far away. While the human was run through a high pass filter, losing those low frequencies and making him less visible at a distance.</p>
+                    
+                </div>
+                <div class="image-column">
+                    <div class="image-gallery">
+                        <div class="image-wrapper-row">
+                            <img src="./results/hybrid_nutmeg_derek.png">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Visualizing a Hybridization</h1>
+                    <p>We're starting with these images of a lion and a dog</p>
+                </div>
+                <div class="image-column">
+                    <div class="image-gallery-2">
+                        <div class="image-wrapper-row">
+                            <img src="./images/dog.jpg">
+                        </div>
+                        <div class="image-wrapper-row">
+                            <img src="./images/lion.jpg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Fourier Transform</h1>
+                    <p>The lion will be put through the high pass filter, while the dog will be put through the low pass filter. Meaning lion should be visible up close where high frequencies are visible, while the dog will dominate the image at distance, where its largely low frequencies.</p>
+                    <p>The Fourier transform will allow us to visualize what the frequencies of each image look before and after going through the filter.</p>
+                    <p>We have the dog on the left, lion on the right.</p>
+                </div>
+                <div class="image-column">
+                    <div class="image-gallery-2">
+                        <div class="image-wrapper-row">
+                            <img src="./results/ft_dog.png">
+                        </div>
+                        <div class="image-wrapper-row">
+                            <img src="./results/ft_lion.png">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Fourier Transform after Applying a Filter</h1>
+                    <p>Originally, both images had peaks in the low frequencies and then had frequencies all over the place.</p>
+                    <p>After the filtering, the dog's frequencies are almost entirely concentrated in the center with the low frequencies. The lion, on the other hand, now has its frequencies significantly more uniformly distributed because some amount of low frequencies were removed. Some still remain, but its now similar to how many high frequencies there are.</p>
+                    <p>I used a sigma value of 7 here for the Gaussian blurring. I chose this so that the transition to the Dog would come at a reasonable distance (somewhere around 10-15 feet). If you instead wanted to make the lion clearer and the dog less visible up close you could increase the blur. The tradeoff is you'd then have to be farther away to see the Dog.</p>
+                </div>
+                <div class="image-column">
+                    <div class="image-gallery-2">
+                        <div class="image-wrapper-row">
+                            <img src="./results/ft_lowpass_dog.png">
+                        </div>
+                        <div class="image-wrapper-row">
+                            <img src="./results/ft_highpass_lion.png">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Hybridized Lion and Dog</h1>
+                    <p>Here's the result of our hybridization process.</p>
+                    <p>The Fourier transform has a pretty even mix of low and high frequencies. Similar to what the Fourier Transform of the images looked like before any filters were applied. This is the magic of how we can create a hybridized image. It contains similar proportion of frequencies to the original images, but the low frequencies come from one image, and the high frequencies from the other.</p>
+                    
+                </div>
+                <div class="image-column">
+                    <div class="image-gallery-2">
+                        <div class="image-wrapper-row">
+                            <img src="./results/ft_hybrid_LionDog.png">
+                        </div>
+                        <div class="image-wrapper-row">
+                            <img src="./results/hybrid_LionDog.png">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Gustav Klimt's "The Kiss" and Rene Magritte's "The Lovers"</h1>
+                    <p>The Kiss is put through the low pass filter, while The Lovers was put through the high pass filter.</p>
+                </div>
+                <div class="image-column">
+                    <div class="image-gallery-2">
+                        <div class="image-wrapper-row">
+                            <img src="./images/the_kiss.jpg">
+                        </div>
+                        <div class="image-wrapper-row">
+                            <img src="./images/the_lovers.jpg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>The Kiss x The Lovers</h1>
+                    <p>You'll see Magritte's painting up close, and Klimt's at a distance.</p>
+                </div>
+                <div class="image-column">
+                    <div class="image-gallery">
+                        <div class="image-wrapper-col">
+                            <img src="./results/hybrid_lovers_thekiss.png">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Smoothly Blending Images</h1>
+                    <p>I am going to walk through the process of how we can take an image of an apple and an orange and smoothly blend them together using gaussian filters and image stacks.</p>
+                    <p>The image on the left is a simple split, while with the image on the right we are using Gaussian filters to smooth the transition. This significantly reduces the seam between the images you see on the left.</p>
+                </div>
+                <div class="image-column">
+                    <div class="image-gallery-2">
+                        <div class="image-wrapper-row">
+                            <img src="./results/naive_blend.png">
+                        </div>
+                        <div class="image-wrapper-row">
+                            <img src="./results/oraple.jpg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="photo-section">
+                <div class="photo-wrapper">
+                    <img src="./results/apple_level0.png">
+                    
+                </div> 
+                <div class="photo-wrapper">
+                    <img src="./results/orange_level0.png">
+                </div>
+                <div class="photo-wrapper">
+                    <img src="./results/combined_apple_orange_level0.png">
+                </div>
+                <div class="photo-wrapper">
+                    <img src="./results/apple_level2.png">
+                    
+                </div>
+                <div class="photo-wrapper">
+                    <img src="./results/orange_level2.png">
+                </div>
+                <div class="photo-wrapper">
+                    <img src="./results/combined_apple_orange_level2.png">
+                </div>
+                <div class="photo-wrapper">
+                    <img src="./results/apple_level4.png">
+                </div>
+                <div class="photo-wrapper">
+                    <img src="./results/orange_level4.png">
+                </div>
+                <div class="photo-wrapper">
+                    <img src="./results/combined_apple_orange_level4.png">
+                </div>
+                <div class="photo-wrapper">
+                    <img src="./results/combined_apple.png">
+                </div>
+                <div class="photo-wrapper">
+                    <img src="./results/combined_orange.png">
+                </div>
+                <div class="photo-wrapper">
+                    <img src="./results/oraple.jpg">
+                </div>
+            </div>
+
+            <div class="main-section">
+                <div class="text-column">
+                    <h1>Smoothly Blending Images</h1>
+                    <p>The images above illustrate how the image stack works. We create some amount of levels, I chose 5, to be our image stack height.</p>
+                    <p>Our goal is to first make a Gaussian stack, where each image is progressively blurrier. Then we'll create a Laplacian stack from our Gaussian stack. A Laplacian stack will contain bandpass images. Basically a certain range of frequencies. We get the Laplacian from the Gaussian by substracting the Gaussians levels.</p>
+                    <p>For example, to get Laplacian stack level 0. We take the original image and the original image convolved with a Gaussian filter. We subtract the blurred image from the original, and this results in a details image of the highest frequencies. We continue this process until we don't have any further levels in the Gaussian stack to utilize.</p>
+                    <p>This results in a Laplacian stack that has images containing certain bands of frequencies.</p>
+                    <p>We will then utilize a mask. In this case, just a black and white square, black on one half, white on the other. Black will have a pixel value of 0, and white a pixel value of 1. We will construct our blended image by also putting our mask through a Gaussian stack to make it blurry and ease the transition between the white and black half.</p>
+                    <p>Our final formuala is Hybrid_Level = G_mask_level * Laplacian_Apple_level + (1 - G_mask_level) * Laplacian_Orange_Level</p>
+                    <p>We go through each level in the stack, create a stack for the hybrid image, and at the very end we will add up all of the images in the hybrid stack and that will be our final image.</p>
+                </div>
+                <div class="image-column">
+                    <div class="image-gallery">
+                        <div class="image-wrapper-row">
+                            <img src="./results/naive_blend.png">
+                        </div>
+                        <div class="image-wrapper-row">
+                            <img src="./results/oraple.jpg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h1>More Examples</h1>
+            <h4>The mash up of a robot hand and the painting utilizes a hand shape mask to blend the arm into the painting.</h4>
+            <div class="photo-section">
+                
+                <div class="photo-wrapper">
+                    <img src="./images/cat.jpeg"> 
+                </div> 
+                <div class="photo-wrapper">
+                    <img src="./images/lion.jpg">
+                </div>
+                <div class="photo-wrapper">
+                    <img src="./results/cat_x_dog.jpg">
+                </div>
+                
+                <div class="photo-wrapper">
+                    <img src="./images/creation_of_adam.jpg">
+                </div>
+                <div class="photo-wrapper">
+                    <img src="./images/robot_hand.jpeg">
+                </div>
+                <div class="photo-wrapper">
+                    <img src="./results/creation_of_adam_X_robot.jpg">
+                </div>
+            </div>
+
+    
+        </main>
+
+        <!-- Footer Section -->
+        <footer class="page-footer">
+            <p>&copy; 2025 Eric Khodorenko</p>
+            <p>https://khody12.github.io/project2/index.html</p>
+        </footer>
+
+    </div>
+    <script src="../../js/main.js"></script>
+</body>
+</html>

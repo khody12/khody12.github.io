@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Images of the Russian Empire | CS180 Portfolio</title>
+    
+    <link rel="stylesheet" href="../../css/global.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <header class="site-header">
+            <a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Portfolio</a>
+            <h1>Images of the Russian Empire</h1>
+            <p>CS180 Project 1</p>
+        </header>
+
+        <div class="content-wrapper">
+            
+            <section class="text-block">
+                <h2>Project Overview</h2>
+                <p>
+                    This project involved restoring early 20th-century color photographs from the Russian Empire. The images were originally captured by Sergei Mikhailovich Prokudin-Gorskii as three separate black-and-white glass plate negatives using red, green, and blue filters. 
+                    He won the Tzar's special permission to travel across the empire and take color photographs of everything he saw.
+                </p>
+                <p>
+                    His idea was to record three exposures of every scene onto a glass plate using a red, a green, and a blue filter. Even though there was no way to print color photographs until much later.
+                </p>
+                <p>
+                    By digitally overlaying and aligning these three channels, the original color and breathtaking beauty of the scenes can be restored, offering a vivid glimpse into a world over a century old.
+                </p>
+            </section>
+            
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/cathedral.jpg" alt="Unaligned color channels">
+                    <div class="caption">Original Glass Plate Scan (RGB Channels)</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/cathedral_restored.jpg" alt="Restored Cathedral">
+                    <div class="caption">Fully Restored Color Image</div>
+                </div>
+            </div>
+
+            <hr>
+
+            <section class="text-block">
+                <h2>Naive Alignment</h2>
+                <p>
+                    The naive solution to this problem is to just take each image, make sure it's the same shape, and then layer the channels over each other. But as we can see, this doesn't look quite right. 
+                </p>
+                <p>
+                    This is because Sergei couldn't keep the camera absolutely perfectly steady as he changed the filters. Considering this was the early 1900s, some small movements are to be expected. So there are some alignment issues that will need to be rectified.
+                </p>
+            </section>
+            
+            <div class="gallery-grid grid-1">
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/naive_alignment_cathedral.png" alt="Naive Alignment">
+                    <div class="caption">Result of Naive Alignment (Significant Ghosting)</div>
+                </div>
+            </div>
+
+            <section class="text-block">
+                <h2>Single-Scale Alignment</h2>
+                <p>
+                    A way to align the color channels is to have a base channel, in my case blue, and compare it with the red and green channel and try to minimize the difference between the two images by comparing the pixels in some range like [-15, 15].
+                </p>
+                <p>
+                    This would be accomplished by keeping one channel steady while shifting the other channel and measuring the sum of the distance between their values using Normalized Cross-Correlation (NCC) or L2 norm.
+                </p>
+                <p>
+                    Essentially we would try shifting the red/green channel say 5px right, 5px up. If this has a lower displacement (i.e. the values are closer), then they should be more aligned. I used the L2 norm to accomplish this. Additionally, I have cropped the borders by about 10% to eliminate the incredibly noisy borders.
+                </p>
+            </section>
+            
+            <div class="gallery-grid grid-1">
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/single_scale_alignment_cathedral.png" alt="Single Scale Alignment">
+                    <div class="caption">Result of Single-Scale Alignment (Much sharper)</div>
+                </div>
+            </div>
+
+            <section class="text-block">
+                <h2>Image Pyramid Alignment</h2>
+                <p>
+                    Single-scale alignment works great for smaller images that don't have tons of pixels. When you move to larger images, you may need to iterate through larger pixel displacements like [-30, 30] in order to ensure alignment. 
+                </p>
+                <p>
+                    One way to fix this is to use an image pyramid. Basically you take the original image and downsample to half the size. You can then run the same Single-Scale alignment method, just on a smaller image. 
+                    You take the height and width displacements from the smaller image and use those points as a starting point for a single scale alignment on the larger image. This enables us to use a smaller search window, and drastically save on compute time.
+                </p>
+                <p>
+                    Ultimately, the idea would be to use recursion to take an original image, make some number of iterations of downsampling depending on the original size of the image. Then proceed through a series of iterations from coarse to fine. Each iteration would give a new height and width displacement value as a starting point for the next larger image's displacement search. 
+                    Each image would be going through a relatively smaller window of possible displacements like [-5, 5] instead of [-15, 15] or larger, massively saving on compute time.
+                </p>
+            </section>
+            
+            <div class="gallery-grid grid-1">
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/church_restored.jpg" alt="Church Restored">
+                    <div class="caption">High-res alignment using Image Pyramid</div>
+                </div>
+            </div>
+
+            <hr>
+
+            <section class="text-block">
+                <h2>Problems with Aligning Using Pixel Intensity</h2>
+                <p>
+                    One major problem with aligning by pixel intensity is that there are occasions where the brightness values of different color channels doesn't match up. This would cause major issues in alignment.
+                </p>
+                <p>
+                    Look at what happens with this photo of the last Emir of Bukhara, Sayyid Mir Muhammad Alim Khan, where the intensities of red, green and blue are quite different.
+                </p>
+            </section>
+            
+            <div class="gallery-grid grid-1">
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/misaligned_emir.jpg" alt="Misaligned Emir">
+                    <div class="caption">Alignment failure due to differing channel intensities</div>
+                </div>
+            </div>
+
+            <section class="text-block">
+                <h2>Using Edge Detection</h2>
+                <p>
+                    Rather than using pixel intensities to align photos, we can use edge detection.
+                </p>
+                <p>
+                    Edge detection works by looking at the steepness of the intensity change in each direction. Larger intensity changes indicate that there is likely an edge there, leading there to be a higher value at that pixel in the edge map. 
+                </p>
+                <p>
+                    We can use these edge maps to more reliably align channels because while color intensities may vary like in the case of the Emir, edges should stay much more consistent.
+                </p>
+            </section>
+            
+            <div class="gallery-grid grid-1">
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/emir_restored.jpg" alt="Restored Emir">
+                    <div class="caption">Successful alignment using Edge Detection</div>
+                </div>
+            </div>
+
+            <hr>
+
+            <section class="text-block">
+                <h2>Image Gallery</h2>
+                <p>Selected results from the restoration process.</p>
+            </section>
+
+            <div class="gallery-grid grid-3">
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/cathedral_restored.jpg">
+                    <div class="caption">Cathedral</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/church_restored.jpg">
+                    <div class="caption">Church</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/emir_restored.jpg">
+                    <div class="caption">Emir</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/harvesters_restored.jpg">
+                    <div class="caption">Harvesters</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/icon_restored.jpg">
+                    <div class="caption">Icon</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/italil_restored.jpg">
+                    <div class="caption">Lady</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/lastochikino_restored.jpg">
+                    <div class="caption">Lastochikino</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/lugano_restored.jpg">
+                    <div class="caption">Lugano</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/melons_restored.jpg">
+                    <div class="caption">Melon Vendor</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/monastery_restored.jpg">
+                    <div class="caption">Monastery</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/self_portrait_restored.jpg">
+                    <div class="caption">Self Portrait</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/siren_restored.jpg">
+                    <div class="caption">Siren</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/three_generations_restored.jpg">
+                    <div class="caption">Three Generations</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/tobolsk_restored.jpg">
+                    <div class="caption">Tobolsk</div>
+                </div>
+            </div>
+
+            <section class="text-block">
+                <h2>Bonus Images</h2>
+                <p>Extra restorations performed on additional plates.</p>
+            </section>
+
+            <div class="gallery-grid grid-3">
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/extra_image_1_restored.jpg">
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/extra_image_2_restored.jpg">
+                </div>
+                <div class="gallery-item">
+                    <img src="./cs180_proj1_data/extra_image_3_restored.jpg">
+                </div>
+            </div>
+
+        </div>
+
+        <footer>
+            <p>&copy; 2025 Eric Khodorenko</p>
+            <p><a href="https://khody12.github.io/project1/index.html">Project Link</a></p>
+        </footer>
+
+    </div>
+    <script src="../../js/main.js"></script>
+
+</body>
+</html>

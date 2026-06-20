@@ -1,0 +1,168 @@
+
+body {
+    /* Sets the default font for the entire page to the readable serif font */
+    font-family: 'Source Serif Pro', serif;
+    background-color: #f8f9fa; 
+    color: #333; 
+    margin: 0; 
+    line-height: 1.6; 
+}      
+
+h1, h2, h3 {
+    font-family: 'Playfair Display', serif;
+}
+
+
+.container {
+    max-width: 1300px; 
+    margin: 0 auto; 
+    padding: 0 20px; 
+}
+
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; 
+    padding: 2rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.page-header h1 {
+    font-size: 2.25rem; 
+    margin: 0; 
+}
+
+.home-button {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #333;
+    border: 2px solid #ccc;
+    border-radius: 6px; 
+    padding: 0.5rem 1rem;
+    text-decoration: none; 
+    transition: all 0.2s ease; 
+}
+
+.home-button:hover {
+    background-color: #f0f0f0; 
+    border-color: #aaa;
+}
+
+
+.main-section {
+    display: flex; /* This is the main flex container for the two columns */
+    flex-direction: column; 
+    padding: 3rem 0;
+    gap: 3rem; 
+    border-bottom:1px solid #e5e7eb;
+}
+
+
+@media (min-width: 768px) {
+    .main-section {
+        flex-direction: row; 
+    }
+}
+
+.text-column {
+    width: 100%; /* On mobile, the column takes the full width */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+}
+
+@media (min-width: 768px) {
+    .text-column {
+        width: 40%; 
+    }
+}
+
+.text-column h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.text-column p {
+    font-size: 1.25rem; 
+    color: #555;
+    margin-bottom: 1.5rem;
+}
+
+
+.image-column {
+    width: 100%; 
+    display:flex;
+    align-items:center;
+}
+
+@media (min-width: 768px) {
+    .image-column {
+        width: 60%; 
+    }
+}
+
+.image-gallery {
+    display: flex;
+    gap: 1rem; 
+    align-items: center; 
+}
+
+.image-gallery-2{
+    display:flex;
+    gap:1rem;
+    align-items:center;
+}
+.image-gallery-2 img {
+    width:100%;
+    height:auto;
+    display:block;
+    border-radius:8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.image-wrapper-2{
+    width:auto;
+    padding-left:10px;
+    margin-left:80px;
+}
+
+.image-wrapper {
+    width: 50%; /* Each image container takes up half of the image-gallery width */
+}
+
+
+.image-gallery img {
+    width: 100%; /* The image will always fill 100% of its container  */
+    height: auto; /* The height adjusts automatically to maintain aspect ratio */
+    display: block; /* Removes any extra space below the image */
+    border-radius: 8px; /* Slightly rounded corners on the images */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* A soft shadow to lift the images off the page */
+}
+
+
+.page-footer {
+    text-align: center;
+    padding: 2rem 0;
+    margin-top: 3rem;
+    border-top: 1px solid #e5e7eb;
+    color: #6b7280; 
+    font-size: 0.875rem;
+}
+
+.photo-section{
+    margin-top:30px;
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows:auto;
+}
+.photo-section img{
+    width:100%;
+    height:auto;
+    border-radius:2px;
+}
+.photo-wrapper{
+    width:100%;
+    max-width:400px;
+    height:auto;
+    
+}

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filters & Frequencies | CS180 Portfolio</title>
+    
+    <link rel="stylesheet" href="../../css/global.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+        
+        <header class="site-header">
+            <a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Portfolio</a>
+            <h1>Fun with Filters and Frequencies</h1>
+            <p>CS180 Project 2</p>
+        </header>
+
+        <div class="content-wrapper">
+
+            <section class="text-block">
+                <h2>1. Convolution</h2>
+                <p>
+                    In this project, I explore the power of manipulating image frequencies to perform blurring, sharpening, hybridization, and blending. 
+                    The foundation of these operations is <strong>convolution</strong>. The process of overlaying a kernel (matrix) over an image to extract specific features.
+                </p>
+                        
+                <p>
+                    Here is an implementation of convolution in Python with a slower, per pixel approach, and a vectorized Numpy approach.
+                </p>
+                <p>
+                    The four loop approach operates on each pixel, this is a very intuitive approach to the process but it ends up taking a long time, especially for large pictures or kernels. 
+                    The vectorized NumPy approach operates on an entire vector at once. 
+                </p>
+                <p>
+                    Boundaries where a kernel would need to access parts of the image that don't exist are handled by padding the image with zeros on the border. It is padded by (height - 1) / 2 and (width - 1) / 2 on the top/bottom and the left/right respectively. Where height and width are the height and width of the kernel.
+                </p>
+            </section>
+
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./results/four_loop_convolution.png" alt="Four loop convolution code">
+                    <div class="caption">Four Loop Approach</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./results/two_loop_convolution.png" alt="Vectorized convolution code">
+                    <div class="caption">Vectorized Approach</div>
+                </div>
+            </div>
+
+            <hr>
+            <section class="text-block">
+                <h2>Finite Difference Operator</h2>
+                <p>
+                To detect edges, we can use the difference operators $D_x = [1, -1]$ and $D_y = [1, -1]^T$. When convolved with an image, these measure the rate of change (gradient) in the horizontal and vertical directions.
+                </p>
+            </section>
+            
+
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./results/dx_cameraman.png" alt="Dx Convolution">
+                    <div class="caption">Partial Derivative in X ($D_x$)</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./results/dy_cameraman.png" alt="Dy Convolution">
+                    <div class="caption">Partial Derivative in Y ($D_y$)</div>
+                </div>
+            </div>
+
+            <section class="text-block">
+                
+                <p>
+                    By calculating the gradient magnitude $\sqrt{D_x^2 + D_y^2}$, we can find the overall edges. However, the raw output is noisy. 
+                    Below, I compare the raw magnitude against a <strong>binarized</strong> version (thresholding the values) to create a clean edge map.
+                </p>
+            </section>
+
+            <div class="comp-container" style="margin-bottom: 3rem;">
+                <img class="comp-img" src="./results/binarized_cameraman.png" alt="Binarized">
+                <div class="comp-label label-right">Binarized (Threshold)</div>
+                
+                <div class="comp-overlay" style="width: 50%;">
+                    <img src="./results/dx_cameraman.png" alt="Gradient"> 
+                </div>
+                <div class="comp-label label-left">Gradient Magnitude</div>
+            </div>
+
+            <hr>
+
+            <section class="text-block">
+                <h2>2. Derivative of Gaussian (DoG) Filter</h2>
+                <p>
+                    The previous results were noisy because high frequencies (noise) act like edges. To fix this, we can apply a <strong>Gaussian Blur</strong> before edge detection.
+                </p>
+                <p>
+                    Because convolution is associative, we can save a step: instead of convolving the image with the Gaussian ($G$) and <em>then</em> the difference operator ($D$), we can convolve the Gaussian with the operator first to create a <strong>Derivative of Gaussian (DoG)</strong> filter.
+                    $$ \frac{d}{dx}(f * G) = f * \frac{d}{dx}G $$
+                </p>
+                <p>
+                    The result is significantly smoother, with fewer artifacts in the background.
+                </p>
+            </section>
+
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./results/DoG_X.jpg" alt="DoG X">
+                    <div class="caption">Derivative of Gaussian (X)</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./results/DoG_Y.jpg" alt="DoG Y">
+                    <div class="caption">Derivative of Gaussian (Y)</div>
+                </div>
+            </div>
+            
+            <div class="gallery-grid grid-1">
+                <div class="gallery-item">
+                    <img src="./results/gaussian_binarized_cameraman.jpg" alt="Smoothed Edge Detection">
+                    <div class="caption">Final Edge Map using Gaussian Smoothing</div>
+                </div>
+            </div>
+
+            <hr>
+
+            <section class="text-block">
+                <h2>3. Image Sharpening</h2>
+                <p>
+                    We can utilize the "Unsharp Masking" technique to sharpen images. The logic is simple: 
+                    we extract the high frequencies (details) by subtracting the low frequencies (blurred image) from the original.
+                </p>
+                <div style="margin: 1.5rem 0; font-size: 1.1rem;">
+                    $$ I_{sharp} = I + \alpha \cdot (I - I_{blurred}) $$
+                </div>
+                <p>
+                    Below, compare the original Taj Mahal with the sharpened version. Notice how the engravings and poles become distinct.
+                </p>
+            </section>
+
+            <div class="comp-container" style="margin-bottom: 40px;">
+                <img class="comp-img" src="./results/2x_sharpened_taj.jpg" alt="Sharpened">
+                <div class="comp-label label-right">Sharpened (2x)</div>
+                
+                <div class="comp-overlay" style="width: 50%;">
+                    <img src="./images/taj.jpg" alt="Original">
+                </div>
+                <div class="comp-label label-left">Original</div>
+            </div>
+
+            <section class="text-block">
+                <h3>Sharpening a Blurry Photo</h3>
+                <p>
+                    I attempted to sharpen a low-light, blurry photo of myself at UC Berkeley. While sharpening cannot "create" data that was lost to blur, 
+                    it significantly enhances the perception of edges (glasses, leaves on the ground).
+                </p>
+            </section>
+
+            <div class="comp-container">
+                <img class="comp-img" src="./results/5x_sharpened_me.jpg" alt="Sharpened Me">
+                <div class="comp-label label-right">Sharpened (5x)</div>
+                
+                <div class="comp-overlay" style="width: 50%;">
+                    <img src="./images/blurry_me.jpeg" alt="Original Me">
+                </div>
+                <div class="comp-label label-left">Original (Blurry)</div>
+            </div>
+
+            <hr>
+
+            <section class="text-block">
+                <h2>4. Hybrid Images</h2>
+                <p>
+                    Hybrid images are static images that change interpretation as a function of viewing distance. 
+                    The high-frequency component (visible up close) is combined with a low-frequency component (visible from afar).
+                </p>
+            </section>
+
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./images/dog.jpg" alt="Dog">
+                    <div class="caption">Low Freq Input (Dog)</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/lion.jpg" alt="Lion">
+                    <div class="caption">High Freq Input (Lion)</div>
+                </div>
+            </div>
+
+            <section class="text-block">
+                <h3>Frequency Analysis (FFT)</h3>
+                <p>
+                    Using Fourier Transforms, we can visualize how the frequency content changes. The Dog (Low Pass) concentrates energy in the center, 
+                    while the Lion (High Pass) retains the spread of outer frequencies.
+                </p>
+            </section>
+
+            <div class="gallery-grid grid-3">
+                <div class="gallery-item">
+                    <img src="./results/ft_lowpass_dog.png" alt="FT Dog">
+                    <div class="caption">Filtered Dog (Low Pass)</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./results/ft_highpass_lion.png" alt="FT Lion">
+                    <div class="caption">Filtered Lion (High Pass)</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./results/ft_hybrid_LionDog.png" alt="FT Hybrid">
+                    <div class="caption">Hybrid FFT Result</div>
+                </div>
+            </div>
+
+            <div class="gallery-grid grid-1">
+                <div class="gallery-item">
+                    <img src="./results/hybrid_LionDog.png" alt="Hybrid Result">
+                    <div class="caption"><strong>The Result:</strong> A Lion up close, a Dog from far away.</div>
+                </div>
+            </div>
+
+            <section class="text-block">
+                <h3>Other Hybrid Examples</h3>
+                <p>Nutmeg the Cat (Low Pass) + Derek (High Pass), and The Kiss (Low Pass) + The Lovers (High Pass).</p>
+            </section>
+
+            <div class="gallery-grid grid-2">
+                <div class="gallery-item">
+                    <img src="./results/hybrid_nutmeg_derek.png" alt="Nutmeg Derek">
+                    <div class="caption">Nutmeg & Derek</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./results/hybrid_lovers_thekiss.png" alt="Art Hybrid">
+                    <div class="caption">The Kiss & The Lovers</div>
+                </div>
+            </div>
+
+            <hr>
+
+            <section class="text-block">
+                <h2>5. Multiresolution Blending</h2>
+                <p>
+                    Using Gaussian and Laplacian stacks, we can blend two images seamlessly. 
+                    Instead of a hard cut, we blend the images at different frequency bands separately.
+                </p>
+                <p>
+                    The "Oraple" (Orange + Apple) is the classic example. Below, compare a naive cut-and-paste vs. the multiresolution blend.
+                </p>
+            </section>
+
+            <div class="comp-container" style="margin-bottom: 40px;">
+                <img class="comp-img" src="./results/oraple.jpg" alt="Oraple">
+                <div class="comp-label label-right">Multiresolution Blend</div>
+                
+                <div class="comp-overlay" style="width: 50%;">
+                    <img src="./results/naive_blend.png" alt="Naive">
+                </div>
+                <div class="comp-label label-left">Naive Paste</div>
+            </div>
+
+            <section class="text-block">
+                <h3>The Blending Stack</h3>
+                <p>
+                    Below is the visualization of the Apple and Orange at different Laplacian levels (frequencies), and how they are combined at each step.
+                </p>
+            </section>
+
+            <div class="gallery-grid grid-3">
+                <div class="gallery-item" style="font-weight: bold; text-align: center;">Apple (Left)</div>
+                <div class="gallery-item" style="font-weight: bold; text-align: center;">Orange (Right)</div>
+                <div class="gallery-item" style="font-weight: bold; text-align: center;">Combined</div>
+
+                <div class="gallery-item"><img src="./results/apple_level0.png"><div class="caption">Level 0</div></div>
+                <div class="gallery-item"><img src="./results/orange_level0.png"><div class="caption">Level 0</div></div>
+                <div class="gallery-item"><img src="./results/combined_apple_orange_level0.png"><div class="caption">Combined 0</div></div>
+
+                <div class="gallery-item"><img src="./results/apple_level2.png"><div class="caption">Level 2</div></div>
+                <div class="gallery-item"><img src="./results/orange_level2.png"><div class="caption">Level 2</div></div>
+                <div class="gallery-item"><img src="./results/combined_apple_orange_level2.png"><div class="caption">Combined 2</div></div>
+
+                <div class="gallery-item"><img src="./results/apple_level4.png"><div class="caption">Level 4</div></div>
+                <div class="gallery-item"><img src="./results/orange_level4.png"><div class="caption">Level 4</div></div>
+                <div class="gallery-item"><img src="./results/combined_apple_orange_level4.png"><div class="caption">Combined 4</div></div>
+            </div>
+
+            <section class="text-block">
+                <h3>Robot Meets Art</h3>
+                <p>
+                    A custom blend utilizing an irregular mask to fuse a robotic hand into "The Creation of Adam".
+                </p>
+            </section>
+
+            <div class="gallery-grid grid-3">
+                <div class="gallery-item">
+                    <img src="./images/creation_of_adam.jpg" alt="Creation">
+                    <div class="caption">Background</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/robot_hand.jpeg" alt="Robot">
+                    <div class="caption">Foreground</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="./results/creation_of_adam_X_robot.jpg" alt="Result">
+                    <div class="caption">Blended Result</div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer>
+            <p>&copy; 2025 Eric Khodorenko</p>
+            <p><a href="https://khody12.github.io/project2/index.html">Project Link</a></p>
+        </footer>
+
+    </div>
+
+    <script src="../../js/main.js"></script>
+</body>
+</html>

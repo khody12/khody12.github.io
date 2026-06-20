@@ -1,0 +1,184 @@
+:root {
+    --bg-color: #ffffff;
+    --bg-secondary: #f9fafb;
+    --text-primary: #111827;
+    --text-secondary: #374151;
+    --accent-color: #2563eb;
+    --border-color: #e5e7eb;
+    --code-bg: #f3f4f6;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    --max-text-width: 750px;
+    --max-media-width: 1100px;
+    --radius-sm: 6px;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    line-height: 1.7;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Layout */
+.container {
+    width: 100%;
+    max-width: var(--max-media-width);
+    margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.text-block {
+    width: 100%;
+    max-width: var(--max-text-width);
+    margin-bottom: 2rem;
+}
+
+/* Typography */
+h1 { font-size: 2.5rem; letter-spacing: -0.025em; margin-bottom: 0.5rem; }
+h2 { font-size: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 3rem; }
+h3 { font-size: 1.5rem; margin-top: 2rem; color: #1f2937; }
+h4 { font-size: 1.2rem; margin-top: 1.5rem; }
+p { margin-bottom: 1.5rem; color: var(--text-secondary); font-size: 1.05rem; }
+
+/* Header & Footer */
+.site-header { padding: 3rem 0; text-align: center; }
+.back-link {
+    display: inline-block; margin-bottom: 1rem; color: var(--text-secondary);
+    text-decoration: none; font-weight: 500;
+}
+.back-link:hover { color: var(--accent-color); }
+footer { border-top: 1px solid var(--border-color); margin-top: 4rem; padding: 2rem 0; text-align: center; color: var(--text-secondary); }
+
+/* Code Blocks */
+.code-block {
+    background: var(--code-bg);
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: #374151;
+    overflow-x: auto;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+    white-space: pre-wrap; /* Preserves formatting */
+}
+
+/* Grids */
+.gallery-grid { display: grid; gap: 1.5rem; width: 100%; margin: 2rem 0; grid-template-columns: 1fr;}
+.grid-1 { grid-template-columns: 1fr; max-width: 800px; }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+
+@media (min-width: 700px) {
+    .grid-1 {
+        grid-template-columns: 1fr;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .grid-2 {
+        /* STRICTLY 2 columns. */
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid-3 {
+        /* STRICTLY 3 columns. */
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.gallery-item { display: flex; flex-direction: column; align-items: center; }
+.gallery-item img {
+    width: 100%; height: auto; border-radius: var(--radius-sm);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.gallery-item img:hover { transform: translateY(-6px); box-shadow: 0 14px 28px rgba(60, 112, 245, 0.25);}
+.caption { margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-secondary); text-align: center; }
+
+/* Comparison Slider */
+.comp-container {
+    position: relative; width: 100%; max-width: 800px; margin: 2rem auto;
+    overflow: hidden; border-radius: var(--radius-sm); cursor: ew-resize; user-select: none;
+}
+.comp-img { width: 100%; display: block; }
+.comp-overlay {
+    position: absolute; top: 0; left: 0; height: 100%;
+    background: white; overflow: hidden; border-right: 2px solid white;
+}
+/* Important: This forces the overlay image to match the container size exactly */
+.comp-overlay img {
+    height: 100%; width: auto; max-width: none;
+    /* You might need JS to force this width to match the container width exactly if aspect ratios differ slightly, 
+       but for identical images this works. */
+} 
+.comp-label {
+    position: absolute; top: 10px; color: white; background: rgba(0,0,0,0.6);
+    padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;
+}
+.label-left { left: 10px; }
+.label-right { right: 10px; }
+
+/* Lightbox */
+.lightbox {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.95); display: flex; justify-content: center; align-items: center;
+    z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.lightbox.active { opacity: 1; pointer-events: all; }
+.lightbox img { max-width: 90%; max-height: 90%; border-radius: 4px; }
+
+img {
+    width: 100%;
+    border-radius: 12px;
+    display: block;
+    cursor: zoom-in;
+    /* This allows BOTH the move and the glow to animate smoothy */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.comp-container img, 
+.comp-overlay img {
+    /* 1. Kill the zoom cursor */
+    cursor: inherit !important; 
+    
+    /* 2. Ensure the mouse clicks pass through to the slider handle */
+    pointer-events: none !important; 
+    
+    /* 3. Remove any accidental hover transforms/shadows from global styles */
+    transform: none !important;
+    box-shadow: none !important;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    
+    /* Prevent the browser from trying to "drag and drop" the image file */
+    -webkit-user-drag: none;
+}
+
+/* Ensure the container triggers the resize arrows */
+.comp-container {
+    cursor: ew-resize !important;
+}
+
+.comp-label {
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* IE/Edge */
+    user-select: none;         /* Standard */
+    cursor: default;           /* Keeps the mouse pointer normal */
+}
+

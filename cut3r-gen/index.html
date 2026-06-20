@@ -281,7 +281,7 @@
   <section>
     <h2>Method</h2>
     <p>
-      CUT3R maintains a recurrent latent scene state updated from a stream of input images. It uses Dense Prediction Transformer (DPT) heads to predict depth, RGB, and camera pose. For novel view synthesis (NVS), it queries the backbone with a raymap and decodes an RGB prediction — but this deterministic regression head averages over all plausible appearances, producing blurry results in ambiguous regions.
+      CUT3R maintains a recurrent latent scene state updated from a stream of input images. It uses Dense Prediction Transformer (DPT) heads to predict depth, RGB, and camera pose. For novel view synthesis (NVS), it queries the backbone with a raymap and decodes an RGB prediction. The deterministic regression head averages over all plausible appearances, producing blurry results in ambiguous regions.
     </p>
     <p>
       We freeze the CUT3R backbone entirely and replace only the RGB color head with a generative head (Head<sub>gen</sub>) trained via Flow Matching. Head<sub>gen</sub> is implemented as a Diffusion Transformer (DiT) with 8 blocks. The query-conditioned CUT3R features <strong>F'<sub>r</sub></strong> condition the DiT via cross-attention. A time embedding is injected into each residual block via adaLN. The network learns a velocity field over a linear probability path from Gaussian noise to the target RGB image, and at inference time we solve the corresponding ODE with 20 Euler steps.
@@ -308,7 +308,7 @@
     <h2>Results</h2>
 
     <h3>Quantitative Comparison</h3>
-    <p>We evaluate on 50 held-out DL3DV-10K scenes. Higher PSNR and SSIM are better; lower LPIPS is better. Our generative head trades pixel-level fidelity (PSNR, SSIM) for sharper, more perceptually plausible outputs — reflected in improved LPIPS on novel view synthesis.</p>
+    <p>We evaluate on 50 held-out DL3DV-10K scenes. Higher PSNR and SSIM are better; lower LPIPS is better. Our generative head trades pixel-level fidelity (PSNR, SSIM) for sharper, more perceptually plausible outputs, reflected in improved LPIPS on novel view synthesis.</p>
 
     <table class="results-table">
       <thead>
@@ -328,7 +328,7 @@
           <td class="best">0.0468</td>
         </tr>
         <tr>
-          <td>Ours — Generative (8 DiT blocks)</td>
+          <td>Ours, 8 DiT blocks</td>
           <td>29.26</td>
           <td>0.8883</td>
           <td>0.1213</td>
@@ -341,7 +341,7 @@
           <td>0.8208</td>
         </tr>
         <tr>
-          <td>Ours — Generative (8 DiT blocks)</td>
+          <td>Ours, 8 DiT blocks</td>
           <td>12.25</td>
           <td>0.3950</td>
           <td class="best">0.6423</td>
@@ -351,7 +351,7 @@
 
     <h3 style="margin-top: 36px;">NVS-Specialized Model (12 DiT blocks)</h3>
     <p>
-      We also trained a larger 12-block variant designed exclusively for novel view synthesis — queried only with ray maps, never with ground-truth images. This model explores a different point in the design space: rather than balancing reconstruction and synthesis, it focuses entirely on generating plausible novel views from the accumulated scene state.
+      We also trained a larger 12-block variant designed exclusively for novel view synthesis, queried only with ray maps and never with ground-truth images. This model explores a different point in the design space: rather than balancing reconstruction and synthesis, it focuses entirely on generating plausible novel views from the accumulated scene state.
     </p>
     <table class="results-table">
       <thead>
@@ -371,13 +371,13 @@
           <td>0.8208</td>
         </tr>
         <tr>
-          <td>Ours — Generative (8 DiT blocks)</td>
+          <td>Ours, 8 DiT blocks</td>
           <td>12.25</td>
           <td>0.3950</td>
           <td>0.6423</td>
         </tr>
         <tr>
-          <td>Ours — Generative (12 DiT blocks, NVS-only)</td>
+          <td>Ours, 12 DiT blocks (NVS-only)</td>
           <td>12.23</td>
           <td>0.4181</td>
           <td class="best">0.5729</td>
@@ -401,8 +401,8 @@
       <figcaption>Additional held-out NVS comparisons. Our generative model preserves fine-grained texture in scenes with complex surfaces (dried flowers, refrigerator shelving) where the regression baseline averages to a neutral blur.</figcaption>
     </figure>
 
-    <h3 style="margin-top: 36px;">Novel View Synthesis — Large Viewpoint Change (45°)</h3>
-    <p>We query the model for a novel view 45° off the last observed camera pose — a challenging setting with high ambiguity. The DPT head predicts a heavy blur of the previous frame's dominant color; our generative head attempts a plausible scene continuation.</p>
+    <h3 style="margin-top: 36px;">Novel View Synthesis: Large Viewpoint Change (45°)</h3>
+    <p>We query the model for a novel view 45° off the last observed camera pose, a challenging setting with high ambiguity. The DPT head predicts a heavy blur of the previous frame's dominant color; our generative head attempts a plausible scene continuation.</p>
 
     <figure>
       <img src="images/slide-11.png" alt="NVS after rotating camera 45 degrees from previous pose" />

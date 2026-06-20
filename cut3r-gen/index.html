@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generative Appearance Modeling for Persistent-State 3D Reconstruction</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+      background: #fff;
+      color: #1a1a1a;
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 64px 0 40px;
+      text-align: center;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .venue {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #0d9488;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: #0f172a;
+      max-width: 700px;
+      margin: 0 auto 28px;
+    }
+
+    .authors {
+      font-size: 1.0625rem;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+
+    .authors a {
+      color: #0f172a;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .authors a:hover { text-decoration: underline; }
+
+    .affiliation {
+      font-size: 0.9375rem;
+      color: #6b7280;
+      margin-bottom: 32px;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 20px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 999px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+      text-decoration: none;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .link-btn:hover { border-color: #0d9488; color: #0d9488; }
+    .link-btn.primary {
+      background: #0f172a;
+      border-color: #0f172a;
+      color: #fff;
+    }
+    .link-btn.primary:hover { background: #0d9488; border-color: #0d9488; }
+
+    /* ── Sections ── */
+    section {
+      padding: 56px 0;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    section:last-of-type { border-bottom: none; }
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #0f172a;
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 10px;
+    }
+
+    p { color: #374151; margin-bottom: 14px; }
+    p:last-child { margin-bottom: 0; }
+
+    .abstract p {
+      font-style: italic;
+      color: #4b5563;
+      font-size: 0.9875rem;
+      max-width: 780px;
+    }
+
+    /* ── Figures ── */
+    figure {
+      margin: 28px 0 8px;
+    }
+
+    figure img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    figcaption {
+      font-size: 0.8125rem;
+      color: #6b7280;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    figcaption strong { color: #374151; }
+
+    .fig-row {
+      display: grid;
+      gap: 12px;
+      margin: 28px 0 8px;
+    }
+    .fig-row.cols-2 { grid-template-columns: 1fr 1fr; }
+    .fig-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    .fig-row figure { margin: 0; }
+
+    .fig-label {
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 6px;
+    }
+
+    /* ── Quantitative table ── */
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin: 20px 0;
+    }
+
+    .results-table th, .results-table td {
+      padding: 10px 16px;
+      text-align: center;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .results-table thead th {
+      font-weight: 600;
+      font-size: 0.8125rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #6b7280;
+      background: #f9fafb;
+    }
+
+    .results-table tbody tr:hover { background: #f9fafb; }
+    .results-table .section-row td {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #9ca3af;
+      padding: 14px 16px 4px;
+      text-align: left;
+      background: none;
+    }
+    .results-table tbody tr:first-child td { border-top: none; }
+    .results-table .best { font-weight: 700; color: #0f172a; }
+    .results-table td:first-child { text-align: left; font-weight: 500; }
+
+    /* ── BibTeX ── */
+    .bibtex {
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px 24px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.8125rem;
+      color: #374151;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      overflow-x: auto;
+    }
+
+    footer {
+      text-align: center;
+      padding: 32px 0;
+      font-size: 0.8125rem;
+      color: #9ca3af;
+    }
+
+    footer a { color: #6b7280; }
+
+    @media (max-width: 600px) {
+      .fig-row.cols-3 { grid-template-columns: 1fr; }
+      .fig-row.cols-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <p class="venue">CS280 &nbsp;·&nbsp; UC Berkeley &nbsp;·&nbsp; 2025</p>
+    <h1>Generative Appearance Modeling for Persistent-State 3D Reconstruction</h1>
+    <p class="authors">
+      <a href="https://khody12.github.io">Eric Khodorenko</a>
+      &emsp;
+      Kevin Tseng
+    </p>
+    <p class="affiliation">UC Berkeley</p>
+    <div class="links">
+      <a href="../cut3r-gen/paper.pdf" class="link-btn primary">📄 Paper</a>
+      <a href="https://khody12.github.io" class="link-btn">← Back to Portfolio</a>
+    </div>
+  </header>
+
+  <!-- Teaser -->
+  <section>
+    <div class="fig-row cols-2">
+      <figure>
+        <img src="images/slide-08.png" alt="Novel view synthesis comparison: ground truth, DPT baseline, and our flow matching output" />
+        <figcaption><strong>Figure 1.</strong> Novel view synthesis on a held-out scene. The regression-based DPT head (middle) produces blurry, over-smoothed outputs. Our generative Flow Matching head (right) synthesizes sharper, more detailed novel views with higher perceptual fidelity.</figcaption>
+      </figure>
+      <figure>
+        <img src="images/slide-04.png" alt="Architecture diagram: CUT3R backbone with DiT-based Flow Matching generative head" />
+        <figcaption><strong>Figure 2.</strong> We freeze CUT3R's backbone and replace only the deterministic DPT RGB head with a Diffusion Transformer (DiT) Flow Matching head conditioned on the backbone's decoder output.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- Abstract -->
+  <section class="abstract">
+    <h2>Abstract</h2>
+    <p>
+      We build on the persistent-state 3D reconstruction framework of CUT3R to improve novel-view appearance prediction. While CUT3R produces accurate geometry and supports querying unseen viewpoints via raymaps, it relies on a deterministic regression head for RGB prediction, which leads to low-quality outputs in unseen regions. We replace this deterministic color head with a conditional generative head trained using Flow Matching to produce visually sharper and more plausible novel-view appearances in ambiguous regions, while accepting weaker pixel-level fidelity than the baseline.
+    </p>
+  </section>
+
+  <!-- Method -->
+  <section>
+    <h2>Method</h2>
+    <p>
+      CUT3R maintains a recurrent latent scene state updated from a stream of input images. It uses Dense Prediction Transformer (DPT) heads to predict depth, RGB, and camera pose. For novel view synthesis (NVS), it queries the backbone with a raymap and decodes an RGB prediction — but this deterministic regression head averages over all plausible appearances, producing blurry results in ambiguous regions.
+    </p>
+    <p>
+      We freeze the CUT3R backbone entirely and replace only the RGB color head with a generative head (Head<sub>gen</sub>) trained via Flow Matching. Head<sub>gen</sub> is implemented as a Diffusion Transformer (DiT) with 8 blocks. The query-conditioned CUT3R features <strong>F'<sub>r</sub></strong> condition the DiT via cross-attention. A time embedding is injected into each residual block via adaLN. The network learns a velocity field over a linear probability path from Gaussian noise to the target RGB image, and at inference time we solve the corresponding ODE with 20 Euler steps.
+    </p>
+
+    <figure>
+      <img src="images/slide-04.png" alt="Architecture overview" />
+      <figcaption><strong>Architecture.</strong> The CUT3R backbone produces condition tokens that drive a DiT-based Flow Matching head. Each DiT block fuses CUT3R's decoder features via cross-attention and incorporates time conditioning via adaLN. The model is trained solely on the Flow Matching objective; all backbone weights remain frozen.</figcaption>
+    </figure>
+
+    <h3 style="margin-top: 28px;">Training</h3>
+    <p>
+      We train on a 110 GB indoor subset of DL3DV-10K (1,558 scenes at 480p), using a single NVIDIA A100 80GB for approximately 100,000 optimizer steps (~35 hours). Each sequence samples N=4 views; 80% of non-anchor views are image reconstruction tasks, 15% are NVS-only (ray query), and 5% use both. We use a pretrained variational autoencoder and train in latent space. Classifier-free guidance (w=2) is applied at inference.
+    </p>
+
+    <figure>
+      <img src="images/slide-05.png" alt="Training loss curve" style="max-width: 580px; margin: 0 auto;" />
+      <figcaption><strong>Training loss</strong> over ~95,000 steps on the DL3DV-10K indoor subset. The model converges steadily with occasional spikes around schedule transitions.</figcaption>
+    </figure>
+  </section>
+
+  <!-- Results -->
+  <section>
+    <h2>Results</h2>
+
+    <h3>Quantitative Comparison</h3>
+    <p>We evaluate on 50 held-out DL3DV-10K scenes across image reconstruction and novel view synthesis. Higher PSNR and SSIM are better; lower LPIPS is better.</p>
+
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>PSNR ↑</th>
+          <th>SSIM ↑</th>
+          <th>LPIPS ↓</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="section-row"><td colspan="4">Image Reconstruction</td></tr>
+        <tr>
+          <td>CUT3R DPT (Baseline)</td>
+          <td class="best">36.05</td>
+          <td class="best">0.9699</td>
+          <td class="best">0.0468</td>
+        </tr>
+        <tr>
+          <td>Ours — Generative (8 DiT blocks)</td>
+          <td>29.26</td>
+          <td>0.8883</td>
+          <td>0.1213</td>
+        </tr>
+        <tr>
+          <td>Ours — Generative (12 DiT blocks)</td>
+          <td>14.55</td>
+          <td>0.4811</td>
+          <td>0.6208</td>
+        </tr>
+        <tr class="section-row"><td colspan="4">Novel View Synthesis</td></tr>
+        <tr>
+          <td>CUT3R DPT (Baseline)</td>
+          <td class="best">14.31</td>
+          <td class="best">0.5192</td>
+          <td>0.8208</td>
+        </tr>
+        <tr>
+          <td>Ours — Generative (8 DiT blocks)</td>
+          <td>12.25</td>
+          <td>0.3950</td>
+          <td>0.6423</td>
+        </tr>
+        <tr>
+          <td>Ours — Generative (12 DiT blocks)</td>
+          <td>12.23</td>
+          <td>0.4181</td>
+          <td class="best">0.5729</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size: 0.875rem; color: #6b7280;">
+      The generative head underperforms the regression baseline on pixel-level metrics (PSNR, SSIM), consistent with the generative model sampling a plausible appearance rather than averaging to the ground truth. Importantly, the 12-block model achieves the best LPIPS on NVS, indicating higher perceptual similarity to ground truth novel views.
+    </p>
+
+    <h3 style="margin-top: 36px;">Qualitative: Novel View Synthesis</h3>
+    <p>Three-way comparison: ground truth (left), CUT3R DPT regression baseline (middle), and our Flow Matching head (right). The baseline collapses plausible appearances into a single blurry mean; our method preserves detail and structure.</p>
+
+    <figure>
+      <img src="images/slide-09.png" alt="NVS qualitative results: chairs, grills" />
+      <figcaption><strong>Held-out NVS scenes.</strong> Each row: ground truth · DPT baseline · our generative output. The baseline produces heavy blur. Our method reconstructs sharper edges and textures, particularly visible in the chair legs (row 1) and grill body (row 2).</figcaption>
+    </figure>
+
+    <figure>
+      <img src="images/slide-10.png" alt="NVS qualitative results: flowers, grocery aisle" />
+      <figcaption>Additional held-out NVS comparisons. Our generative model preserves fine-grained texture in scenes with complex surfaces (dried flowers, refrigerator shelving) where the regression baseline averages to a neutral blur.</figcaption>
+    </figure>
+
+    <h3 style="margin-top: 36px;">Novel View Synthesis — Large Viewpoint Change (45°)</h3>
+    <p>We query the model for a novel view 45° off the last observed camera pose — a challenging setting with high ambiguity. The DPT head predicts a heavy blur of the previous frame's dominant color; our generative head attempts a plausible scene continuation.</p>
+
+    <figure>
+      <img src="images/slide-11.png" alt="NVS after rotating camera 45 degrees from previous pose" />
+      <figcaption><strong>45° rotation NVS.</strong> Ground truth (left) · DPT baseline (middle) · our generative output (right). In highly ambiguous viewpoints the DPT head collapses entirely. Our model infers plausible geometry and appearance from the accumulated scene state.</figcaption>
+    </figure>
+  </section>
+
+  <!-- Conclusion -->
+  <section>
+    <h2>Conclusion</h2>
+    <p>
+      We demonstrate that replacing CUT3R's deterministic RGB head with a Flow Matching generative head produces visually sharper and perceptually more similar novel views, as measured by LPIPS, while trailing the baseline on pixel-level metrics (PSNR, SSIM). This confirms the expected trade-off: regression models minimize pixel error by averaging over plausible appearances, while generative models sample a specific plausible appearance.
+    </p>
+    <p>
+      Our results are constrained by a limited compute budget (single A100, 35 hours) and a training subset of 110 GB from DL3DV-10K. We expect that scaling the model, data, and training steps would bring image reconstruction quality in line with the regression baseline while extending the generative advantage on novel views. A more promising direction may be a mixed architecture that applies a generative head selectively for ambiguous NVS queries while retaining regression for reconstruction.
+    </p>
+  </section>
+
+  <!-- BibTeX -->
+  <section>
+    <h2>Citation</h2>
+    <p>If you find this work useful, please cite:</p>
+    <div class="bibtex">@article{khodorenko2025generative,
+  title     = {Generative Appearance Modeling for Persistent-State {3D} Reconstruction},
+  author    = {Khodorenko, Eric and Tseng, Kevin},
+  institution = {UC Berkeley},
+  year      = {2025}
+}</div>
+  </section>
+
+</div>
+
+<footer>
+  <p>Eric Khodorenko &amp; Kevin Tseng &nbsp;·&nbsp; UC Berkeley CS280 &nbsp;·&nbsp; 2025</p>
+  <p style="margin-top: 6px;"><a href="https://khody12.github.io">khody12.github.io</a></p>
+</footer>
+
+</body>
+</html>

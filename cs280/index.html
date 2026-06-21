@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CS280 Computer Vision – Eric Khodorenko</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #fff;
+      color: #1a1a1a;
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    a { color: #0d9488; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Header ── */
+    header {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 18px 0;
+    }
+    header .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .back-link {
+      font-size: 14px;
+      color: #6b7280;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .back-link:hover { color: #0d9488; text-decoration: none; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 72px 0 56px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .course-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #0d9488;
+      margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: #0f172a;
+      margin-bottom: 20px;
+    }
+    .hero p {
+      font-size: 1.0625rem;
+      color: #4b5563;
+      max-width: 620px;
+      line-height: 1.75;
+      margin-bottom: 28px;
+    }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .meta-item {
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .meta-item strong {
+      color: #374151;
+      font-weight: 600;
+    }
+
+    /* ── Section ── */
+    .section {
+      padding: 64px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .section:last-of-type { border-bottom: none; }
+
+    .hw-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #0d9488;
+      margin-bottom: 10px;
+    }
+    .section h2 {
+      font-size: clamp(1.4rem, 3vw, 1.85rem);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #0f172a;
+      margin-bottom: 20px;
+    }
+
+    .section-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+    .section-body.single { display: block; }
+
+    .prose p {
+      color: #374151;
+      margin-bottom: 14px;
+      font-size: 0.9625rem;
+      line-height: 1.75;
+    }
+    .prose p:last-child { margin-bottom: 0; }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 18px;
+    }
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #f0fdfa;
+      color: #0f766e;
+      border: 1px solid #99f6e4;
+    }
+
+    /* ── Images ── */
+    .img-block {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .img-block img, .img-block .gif-wrap img {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      display: block;
+    }
+    .img-caption {
+      font-size: 12px;
+      color: #9ca3af;
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    .gif-wrap {
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+    }
+    .gif-wrap img {
+      border-radius: 0;
+      border: none;
+    }
+
+    /* ── Final project card ── */
+    .project-card {
+      margin-top: 40px;
+      padding: 28px 32px;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      background: #fafafa;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+    }
+    .project-card h3 {
+      font-size: 1.0625rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .project-card p {
+      font-size: 0.9rem;
+      color: #6b7280;
+      line-height: 1.6;
+    }
+    .project-card a.btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #0d9488;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 999px;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .project-card a.btn:hover { background: #0f766e; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 32px 0;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    footer a { color: #0d9488; }
+
+    @media (max-width: 640px) {
+      .section-body { grid-template-columns: 1fr; gap: 28px; }
+      .project-card { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <a href="https://khody12.github.io" class="back-link">← Eric Khodorenko</a>
+      <span style="font-size:13px; color:#9ca3af;">UC Berkeley · Spring 2026</span>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="container">
+      <div class="course-tag">CS280 · Computer Vision · UC Berkeley</div>
+      <h1>CS280 Coursework</h1>
+      <p>
+        A collection of projects from CS280 (Computer Vision) at UC Berkeley.
+        Topics range from classical camera calibration and feature tracking to
+        deep learning approaches for keypoint detection and generative modeling.
+      </p>
+      <div class="meta-row">
+        <div class="meta-item"><strong>Course</strong> &nbsp;CS280: Computer Vision</div>
+        <div class="meta-item"><strong>Term</strong> &nbsp;Fall 2025 / Spring 2026</div>
+        <div class="meta-item"><strong>Instructor</strong> &nbsp;UC Berkeley</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HW1: Poor Man's AR -->
+  <div class="section">
+    <div class="container">
+      <div class="hw-label">Homework 1</div>
+      <h2>Poor Man's AR: Camera Calibration &amp; Pose Estimation</h2>
+
+      <div class="section-body">
+        <div class="prose">
+          <p>
+            Built a from-scratch augmented reality pipeline using only a webcam and a checkerboard.
+            The approach: manually annotate 2D-to-3D correspondences in the first frame, then track
+            them across frames using OpenCV's Median Flow tracker.
+          </p>
+          <p>
+            For each frame, a projection matrix is estimated via least squares from the tracked
+            2D-3D point pairs. This gives us the camera pose without any explicit calibration
+            step, hence the "poor man's" framing. The estimated projection is then used to
+            overlay a 3D robot hand model onto the scene in the correct perspective.
+          </p>
+          <p>
+            The pipeline also includes a full camera calibration step using checkerboard corners
+            to estimate intrinsic parameters K, and a homography-based approach to cross-validate
+            the calibration results.
+          </p>
+          <div class="tags">
+            <span class="tag">Camera Calibration</span>
+            <span class="tag">Median Flow</span>
+            <span class="tag">Homography</span>
+            <span class="tag">Least Squares</span>
+            <span class="tag">OpenCV</span>
+          </div>
+        </div>
+
+        <div class="img-block">
+          <div class="gif-wrap">
+            <img src="images/ar5.gif" alt="Poor Man's AR: 3D robot hand overlaid on video" />
+          </div>
+          <p class="img-caption">3D robot hand projected onto live video using estimated camera pose</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HW2: Facial Keypoint Detection -->
+  <div class="section">
+    <div class="container">
+      <div class="hw-label">Homework 2</div>
+      <h2>Facial Keypoint Detection</h2>
+
+      <div class="section-body">
+        <div class="prose">
+          <p>
+            Implemented three progressively more powerful approaches to detecting 69 facial
+            keypoints on the iBUG 300-W dataset.
+          </p>
+          <p>
+            <strong>Part 1: Custom CNN.</strong> Built a 5-layer convolutional network with
+            filter widths scaling from 64 to 512, max pooling, and a two-layer regression head.
+            Systematically tuned filter count, learning rate, and dropout.
+          </p>
+          <p>
+            <strong>Part 2: ResNet Transfer Learning.</strong> Adapted a pretrained ResNet with a
+            custom regression head. Used a two-stage fine-tuning strategy: first training only
+            the head for a few epochs, then unfreezing the full model. This roughly doubled
+            performance over the scratch CNN.
+          </p>
+          <p>
+            <strong>Part 3: Gaussian Heatmaps.</strong> Reformulated the problem as heatmap
+            regression using a UNet-style architecture. Each keypoint is encoded as a 2D
+            Gaussian blob; the model predicts one heatmap per keypoint and peaks are decoded
+            back to coordinates. The heatmap approach yields significantly sharper localization.
+          </p>
+          <div class="tags">
+            <span class="tag">PyTorch</span>
+            <span class="tag">CNN</span>
+            <span class="tag">ResNet</span>
+            <span class="tag">Transfer Learning</span>
+            <span class="tag">Heatmap Regression</span>
+            <span class="tag">UNet</span>
+          </div>
+        </div>
+
+        <div class="img-block">
+          <img src="images/hw2_keypoints.png" alt="Facial keypoint predictions vs ground truth" />
+          <p class="img-caption">Red = predicted, green = ground truth. Simple CNN output.</p>
+          <img src="images/hw2_heatmaps.png" alt="Gaussian heatmap predictions" style="margin-top:8px;" />
+          <p class="img-caption">Ground truth (left) vs predicted (right) Gaussian heatmaps.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HW3: Flow Matching -->
+  <div class="section">
+    <div class="container">
+      <div class="hw-label">Homework 3</div>
+      <h2>Flow Matching for Image Generation</h2>
+
+      <div class="section-body">
+        <div class="prose">
+          <p>
+            Implemented and compared several flow matching formulations for generative modeling
+            on MNIST. Flow matching learns an ODE vector field that transports noise into
+            data by minimizing the difference between the predicted and ideal flow at each
+            timestep.
+          </p>
+          <p>
+            Built a UNet with residual blocks, time-conditioning via sinusoidal embeddings,
+            and multi-head self-attention at the bottleneck. Trained four flow matching variants
+            on top of the same backbone:
+          </p>
+          <p>
+            <strong>UNet (vanilla)</strong> matches the simplest linear interpolation flow.
+            <strong>IS (Independent Samples)</strong> samples source and target independently
+            at each batch step. <strong>LS (Linear Schedule)</strong> uses a fixed sigma
+            schedule. <strong>ELS / bbELS</strong> apply entropic and bounding-box entropic
+            regularization to reduce transport cost.
+          </p>
+          <p>
+            The UNet baseline produced the cleanest samples; the entropic variants traded
+            sharpness for more diverse modes.
+          </p>
+          <div class="tags">
+            <span class="tag">Flow Matching</span>
+            <span class="tag">UNet</span>
+            <span class="tag">Attention</span>
+            <span class="tag">Generative Models</span>
+            <span class="tag">PyTorch</span>
+          </div>
+        </div>
+
+        <div class="img-block">
+          <img src="images/hw3_results.png" alt="Flow matching generation comparison" />
+          <p class="img-caption">
+            Noise (left) denoised by 5 flow matching variants: UNet, IS, LS, ELS, bbELS.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Final Project -->
+  <div class="section">
+    <div class="container">
+      <div class="hw-label">Final Project</div>
+      <h2>Generative Appearance Modeling for 3D Reconstruction</h2>
+      <div class="prose">
+        <p>
+          Extended the CUT3R 3D reconstruction model by replacing its deterministic RGB output
+          head with a Flow Matching generative head. The goal: synthesize high-quality novel
+          views directly from CUT3R's latent scene representation, rather than averaging
+          over uncertain geometry.
+        </p>
+        <p>
+          Trained two variants: an 8-block DiT architecture jointly on reconstruction and
+          novel view synthesis, and a 12-block model specialized for NVS only.
+          The generative head achieves improved LPIPS on novel views compared to the baseline
+          DPT head.
+        </p>
+      </div>
+      <div class="project-card">
+        <div>
+          <h3>Generative Head for CUT3R</h3>
+          <p>
+            Flow Matching head for novel view synthesis from CUT3R's latent representation.
+            Results, architecture diagrams, and quantitative comparisons.
+          </p>
+        </div>
+        <a href="/cut3r-gen/" class="btn">View Project ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <a href="https://khody12.github.io">khody12.github.io</a>
+      &nbsp;·&nbsp;
+      Eric Khodorenko &nbsp;·&nbsp; UC Berkeley CS280
+    </div>
+  </footer>
+
+</body>
+</html>

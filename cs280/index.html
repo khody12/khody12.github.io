@@ -262,20 +262,21 @@
       <div class="section-body">
         <div class="prose">
           <p>
-            Built a from-scratch augmented reality pipeline using only a webcam and a checkerboard.
-            The approach: manually annotate 2D-to-3D correspondences in the first frame, then track
-            them across frames using OpenCV's Median Flow tracker.
+            Built a from-scratch augmented reality pipeline using only a webcam and a flat object
+            on a table. The approach: manually annotate 2D-to-3D correspondences on the first frame,
+            then track them across all subsequent frames using Lucas-Kanade optical flow with
+            forward-backward validation.
           </p>
           <p>
-            For each frame, a projection matrix is estimated via least squares from the tracked
-            2D-3D point pairs. This gives us the camera pose without any explicit calibration
-            step, hence the "poor man's" framing. The estimated projection is then used to
-            overlay a 3D robot hand model onto the scene in the correct perspective.
+            For each frame, a 3x4 projection matrix is estimated via least squares from the tracked
+            2D-3D point pairs. This recovers the camera pose without any explicit calibration step,
+            hence "poor man's AR." The estimated projection is then used to overlay a 3D wireframe
+            cube onto the scene, with edges rendered in perspective.
           </p>
           <p>
-            The pipeline also includes a full camera calibration step using checkerboard corners
-            to estimate intrinsic parameters K, and a homography-based approach to cross-validate
-            the calibration results.
+            Also implemented full camera calibration using checkerboard corner detection to
+            estimate intrinsic parameters K, and a homography-based approach to cross-validate
+            the results.
           </p>
           <div class="tags">
             <span class="tag">Camera Calibration</span>
@@ -290,7 +291,7 @@
           <div class="gif-wrap">
             <img src="images/ar5.gif" alt="Poor Man's AR: 3D robot hand overlaid on video" />
           </div>
-          <p class="img-caption">3D robot hand projected onto live video using estimated camera pose</p>
+          <p class="img-caption">3D wireframe cube overlaid in perspective using the estimated projection matrix</p>
         </div>
       </div>
     </div>
